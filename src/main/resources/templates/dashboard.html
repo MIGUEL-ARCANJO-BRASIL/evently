@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head><title>Evently</title></head>
+<body>
+<h1>Olá, <span th:text="${usuario}"></span>!</h1>
+<p sec:authorize="hasRole('MEMBRO')">Área do membro</p>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Sair</button>
+</form>
+</body>
+</html>

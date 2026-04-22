@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>Evently — Login</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="auth-container">
+    <h1>Evently</h1>
+    <h2>Entrar na sua conta</h2>
+
+    <div th:if="${param.erro}" class="alert alert-erro">
+        E-mail ou senha incorretos.
+    </div>
+    <div th:if="${param.logout}" class="alert alert-sucesso">
+        Você saiu com sucesso.
+    </div>
+
+    <form th:action="@{/auth/login}" method="post">
+        <div class="form-group">
+            <label for="username">E-mail</label>
+            <input type="email" id="username" name="username"
+                   placeholder="seu@email.com" required autofocus/>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password"
+                   placeholder="••••••••" required/>
+        </div>
+
+        <button type="submit" class="btn-primary">Entrar</button>
+    </form>
+
+    <p class="auth-link">
+        Não tem conta? <a th:href="@{/auth/register}">Cadastre-se</a>
+    </p>
+</div>
+
+</body>
+</html>
