@@ -31,5 +31,7 @@ public class UserRegisterDTO {
     @CPF(message = "CPF inválido")
     private String cpf;
 
+    @NotBlank(message = "Telefone é obrigatório")
+    private String phone;
     private Role role = Role.MEMBRO;
 }

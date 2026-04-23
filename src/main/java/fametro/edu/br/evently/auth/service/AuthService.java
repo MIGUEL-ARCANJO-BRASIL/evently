@@ -4,6 +4,7 @@ import fametro.edu.br.evently.auth.dto.UserLoginDTO;
 import fametro.edu.br.evently.auth.dto.UserRegisterDTO;
 import fametro.edu.br.evently.user.model.User;
 import fametro.edu.br.evently.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,10 +24,11 @@ public class AuthService {
 
     public void register(UserRegisterDTO dto) {
         User user = User.builder().
-                name(dto.getName()).email(dto.getEmail()).password(passwordEncoder.encode(dto.getPassword())).cpf(dto.getCpf()).role(dto.getRole()).build();
+                name(dto.getName()).email(dto.getEmail()).password(passwordEncoder.encode(dto.getPassword())).cpf(dto.getCpf()).role(dto.getRole()).phone(dto.getPhone()).build();
         log.info("Usuário {} cadastrado com sucesso", user.getEmail());
         this.userRepository.save(user);
     }
+
 
     public boolean existsByEmail(String email) {
         log.info("Usuário existe - email: {}", email);

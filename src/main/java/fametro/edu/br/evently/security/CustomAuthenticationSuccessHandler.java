@@ -28,7 +28,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         switch (role) {
             case "ROLE_ADMIN"        -> response.sendRedirect("/events");
             case "ROLE_ORGANIZADOR"  -> response.sendRedirect("/organizador/dashboard");
-            case "ROLE_MEMBRO"       -> response.sendRedirect("/dashboard");
+            case "ROLE_MEMBRO"       -> response.sendRedirect("/events");
             default                  -> response.sendRedirect("/");
         }
     }}

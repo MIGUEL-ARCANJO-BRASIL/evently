@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Meu Perfil — Evently</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+</head>
+<body>
+
+<div class="events-page">
+    <div th:replace="~{fragments/navbar :: navbar('profile')}"></div>
+
+    <main class="profile-page">
+        <section class="profile-header">
+            <h1>Meu Perfil</h1>
+            <p>Gerencie suas informações pessoais e configurações de conta.</p>
+        </section>
+
+        <section class="profile-card">
+            <div class="profile-top">
+                <div class="profile-avatar-wrap">
+                    <div class="profile-avatar">
+                        <img th:if="${user.avatar != null and !#strings.isEmpty(user.avatar)}"
+                             th:src="${user.avatar.startsWith('http') ? user.avatar : '/uploads/' + user.avatar}"
+                             alt="Foto de perfil">
+
+                        <div th:if="${user.avatar == null or #strings.isEmpty(user.avatar)}"
+                             class="profile-avatar-placeholder"
+                             th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">
+                        </div>
+                    </div>
+
+                    <button type="button" class="avatar-edit-btn">✎</button>
+                </div>
+
+                <div class="profile-avatar-text">
+                    <h2>Foto de Perfil</h2>
+                    <p>Recomendado: JPG ou PNG de pelo menos 400x400px.</p>
+                </div>
+            </div>
+
+            <form class="profile-form" th:action="@{/profile}" method="post" th:object="${user}">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="name">Nome Completo</label>
+                        <div class="field-wrap">
+                            <input type="text" id="name" th:field="*{name}">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="email">E-mail</label>
+                        <div class="field-wrap">
+                            <input type="email" id="email" th:field="*{email}">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">Telefone</label>
+                        <div class="field-wrap">
+                            <input type="text" id="phone" th:field="*{phone}">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="cpf">CPF</label>
+                        <div class="field-wrap">
+                            <input type="text" id="cpf" th:field="*{cpf}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field field-full">
+                    <label for="password">Senha</label>
+                    <div class="field-wrap password-wrap">
+                        <input type="password" id="password" placeholder="••••••••">
+                        <button type="button" class="toggle-password">👁</button>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button type="submit" class="btn-save">Salvar Alterações</button>
+                    <a th:href="@{/events}" class="btn-cancel">Cancelar</a>
+                </div>
+            </form>
+
+            <div class="profile-extra-actions">
+                <form th:action="@{/logout}" method="post" class="logout-form">
+                    <button type="submit" class="btn-logout">Sair da conta</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</div>
+
+</body>
+</html>

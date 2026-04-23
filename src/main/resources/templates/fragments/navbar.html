@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<body>
+<header class="topbar" th:fragment="navbar(activePage)">
+    <div class="topbar-left">
+        <span class="brand">Evently</span>
+    </div>
+
+    <nav class="topbar-center">
+        <a th:href="@{/events}"
+           class="nav-link"
+           th:classappend="${activePage == 'events'} ? ' active' : ''">
+            Eventos
+        </a>
+
+        <a sec:authorize="isAuthenticated()"
+           th:href="@{/my-events}"
+           class="nav-link"
+           th:classappend="${activePage == 'my-events'} ? ' active' : ''">
+            Meus Eventos
+        </a>
+
+        <a sec:authorize="isAuthenticated() and hasRole('ADMIN')"
+           th:href="@{/events/new}"
+           class="nav-link"
+           th:classappend="${activePage == 'create'} ? ' active' : ''">
+            Criar Evento
+        </a>
+    </nav>
+
+    <div class="topbar-right">
+        <a sec:authorize="isAuthenticated()"
+           th:href="@{/profile}"
+           class="nav-avatar-link"
+           th:classappend="${activePage == 'profile'} ? ' active' : ''"
+           aria-label="Meu perfil">
+            <img th:if="${#authentication.principal.avatar != null and !#strings.isEmpty(#authentication.principal.avatar)}"
+                 th:src="${#authentication.principal.avatar.startsWith('http') ? #authentication.principal.avatar : '/uploads/' + #authentication.principal.avatar}"
+                 alt="Avatar do usuário"
+                 class="nav-avatar-img">
+
+            <span th:if="${#authentication.principal.avatar == null or #strings.isEmpty(#authentication.principal.avatar)}"
+                  class="nav-avatar-placeholder"
+                  th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">
+    </span>
+        </a>
+        <a sec:authorize="isAnonymous()" th:href="@{/auth/login}" class="logout-link">Entrar</a>
+    </div>
+</header>
+</body>
+</html>

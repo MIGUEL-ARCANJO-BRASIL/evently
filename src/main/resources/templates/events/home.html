@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>Eventos — Evently</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+<div class="events-page">
+    <div th:replace="~{fragments/navbar :: navbar('events')}"></div>
+
+    <main class="events-content">
+        <section class="hero-row">
+            <div>
+                <h1 class="events-title">Próximos Eventos</h1>
+
+                <div class="category-pills">
+                    <a href="#" class="pill active">Todos</a>
+                    <a href="#" class="pill">Tecnologia</a>
+                    <a href="#" class="pill">Acadêmico</a>
+                    <a href="#" class="pill">Design</a>
+                    <a href="#" class="pill">Música</a>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <input type="text" placeholder="Buscar eventos...">
+            </div>
+        </section>
+
+        <div th:if="${sucesso}" class="alert alert-sucesso">
+            <span th:text="${sucesso}"></span>
+        </div>
+
+        <section class="events-grid">
+            <article th:each="event : ${events}" class="event-card">
+                <div class="event-image">
+                    <img th:if="${event.coverImage != null}"
+                         th:src="${event.coverImage.startsWith('http') ? event.coverImage : '/uploads/' + event.coverImage}"
+                         alt="Capa do evento"/>
+                    <div th:if="${event.coverImage == null}" class="card-sem-imagem">
+                        Sem imagem
+                    </div>
+                    <div class="event-price">
+        <span th:if="${event.value == null or event.value == 0}" class="price-free">
+            Gratuito
+        </span>
+
+                        <span th:if="${event.value != null and event.value > 0}" class="price-paid">
+            R$ <span th:text="${#numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></span>
+        </span>
+                    </div>
+
+
+                    <span th:if="${event.category != null}"
+                          class="badge-categoria"
+                          th:text="${event.category.name}"></span>
+
+                    <span class="badge-status"
+                          th:text="${event.eventStatus}"
+                          th:classappend="${event.eventStatus.name() == 'ATIVO'} ? 'status-ativo' :
+                          (${event.eventStatus.name() == 'CANCELADO'} ? 'status-cancelado' :
+                          'status-outros')">
+                    </span>
+                </div>
+
+                <div class="event-body">
+                    <div class="event-price">
+        <span th:if="${event.value == null or event.value == 0}" class="price-free">
+            Gratuito
+        </span>
+
+                        <span th:if="${event.value != null and event.value > 0}" class="price-paid">
+            R$ <span th:text="${#numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></span>
+        </span>
+                    </div>
+
+                    <h2 th:text="${event.title}"></h2>
+
+                    <p th:text="${event.description}"></p>
+
+
+
+                    <ul class="event-meta">
+                        <li class="meta-item">
+                            <i data-lucide="calendar-days" class="meta-icon"></i>
+                            <span th:text="${#temporals.format(event.eventDate, 'dd/MM/yy')} + ' às ' + ${#temporals.format(event.eventDate, 'HH')} + 'h'"></span>
+                        </li>
+
+                        <li class="meta-item">
+                            <i data-lucide="map-pin" class="meta-icon"></i>
+                            <span th:text="${event.location}"></span>
+                        </li>
+
+                        <li class="meta-item">
+                            <i data-lucide="users" class="meta-icon"></i>
+                            <span th:text="${event.availableSlots} + ' vagas disponíveis'"></span>
+                        </li>
+                    </ul>
+
+                    <div class="event-actions">
+                        <a th:href="@{/events/{id}(id=${event.id})}" class="btn-details">Ver Detalhes</a>
+
+                        <div sec:authorize="hasAnyRole('ADMIN','ORGANIZADOR')" class="admin-actions">
+                            <a th:href="@{/events/{id}/edit(id=${event.id})}" class="icon-action">✎</a>
+                            <form th:action="@{/events/{id}/archive(id=${event.id})}" method="post">
+                                <button type="submit" class="icon-action"
+                                        onclick="return confirm('Deseja arquivar este evento?')">
+                                    🗑
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <p th:if="${#lists.isEmpty(events)}" class="empty-state">Nenhum evento disponível.</p>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+</div>
+
+</body>
+<script>
+    lucide.createIcons();
+</script>
+</html>

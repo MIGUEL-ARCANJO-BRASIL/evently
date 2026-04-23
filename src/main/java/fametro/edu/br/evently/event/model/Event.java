@@ -27,6 +27,11 @@ public class Event {
     @Column(name = "event_date")
     private LocalDateTime eventDate;
 
+    @Column(name = "registration_deadline")
+    private LocalDateTime registrationDeadline;
+
+    private Double value;
+
     private String location;
 
     private Integer totalSlots;

@@ -7,6 +7,7 @@ import fametro.edu.br.evently.event.service.EventService;
 import fametro.edu.br.evently.user.model.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @Controller
 @RequestMapping("/events")
 @RequiredArgsConstructor
+@Slf4j
 public class EventController {
 
     private final EventService eventService;
@@ -32,7 +34,7 @@ public class EventController {
         List<Event> lista = eventService.findAllActive();
         System.out.println("Quantidade de eventos ativos encontrados: " + lista.size());
         model.addAttribute("events", lista);
-        return "events/list";
+        return "events/home";
     }
 
     @GetMapping("/{id}")
@@ -107,7 +109,11 @@ public class EventController {
 
         // Injeta a imagem manualmente no form antes de passar pro service
         if (coverImage != null && !coverImage.isEmpty()) {
+            log.info("Imagem recebida: {}, tamanho: {}", coverImage.getOriginalFilename(), coverImage.getSize());
             form.setCoverImage(coverImage);
+        } else {
+            log.info("Sem imagem nova. isEmpty={}, size={}, name={}",
+                    coverImage.isEmpty(), coverImage.getSize(), coverImage.getOriginalFilename());
         }
 
         eventService.update(id, form);

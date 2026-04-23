@@ -1,0 +1,223 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --bg-page: #F0EFFA;
+    --border-color: #d1d5db;
+}
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-page);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Mudamos para min-height para permitir que a página cresça se o card for longo */
+    min-height: 100vh;
+}
+
+.page {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Adiciona um preenchimento obrigatório nas bordas superior e inferior */
+    padding: 40px 20px;
+    box-sizing: border-box;
+}
+
+.card {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 520px; /* Largura ideal para o cadastro não ficar apertado */
+    text-align: center;
+    box-sizing: border-box;
+    /* Opcional: garante que o card não "cole" no topo em telas muito pequenas */
+    margin: auto 0;
+}
+
+/* Garante que em telas muito pequenas os campos não fiquem colados */
+.field-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap; /* Se a tela for muito pequena, o CPF pula para baixo */
+}
+
+.field-row .field {
+    flex: 1;
+    min-width: 200px; /* Impede que o campo fique absurdamente fino */
+}
+
+.icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: #EEEDFE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+}
+
+.brand {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0 0 8px;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+form { text-align: left; }
+
+.field { margin-bottom: 18px; }
+
+.field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.field-row {
+    display: flex;
+    gap: 12px;
+}
+
+.field-row .field { flex: 1; }
+
+.field-wrap input,
+.select-field {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.field-wrap input:focus,
+.select-field:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select-field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    background-color: white;
+}
+
+.forgot {
+    font-size: 13px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.btn {
+    width: 100%;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.btn:hover { background-color: var(--primary-hover); }
+
+.divider {
+    border: 0;
+    border-top: 1px solid #f3f4f6;
+    margin: 25px 0;
+}
+
+.footer-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.footer-text a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.field-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    display: block;
+    margin-top: 4px;
+}
+
+.field-erro {
+    font-size: 12px;
+    color: #A32D2D;
+    display: block;
+    margin-top: 4px;
+}
+
+.ssl-badge {
+    margin-top: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: #f9fafb;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #f1f1f1;
+}
+
+.alert {
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.alert-erro { background: #FCEBEB; color: #A32D2D; }
+.alert-sucesso { background: #EAF3DE; color: #3B6D11; }
+
+.page-footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+}

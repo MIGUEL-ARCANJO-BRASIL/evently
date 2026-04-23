@@ -23,9 +23,18 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/css/**", "/js/**", "/images/**", "/uploads/**", "/error").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/events", "/events/{id}").permitAll() // listagem/detalhe públicos
-                        .requestMatchers("/events/*/edit", "/events/*/archive", "/events/new").hasAnyRole("ADMIN", "ORGANIZADOR") // edição exige login
+                        .requestMatchers(
+                                "/",
+                                "/auth/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/uploads/**",
+                                "/error"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/events", "/events/*").permitAll()
+                        .requestMatchers("/events/new").hasRole("ADMIN")
+                        .requestMatchers("/events/*/edit", "/events/*/archive").hasAnyRole("ADMIN", "ORGANIZADOR")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/organizador/**").hasAnyRole("ADMIN", "ORGANIZADOR")
                         .anyRequest().authenticated()
@@ -50,6 +59,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

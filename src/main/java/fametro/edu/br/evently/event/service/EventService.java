@@ -8,6 +8,7 @@ import fametro.edu.br.evently.event.repository.CategoryRepository;
 import fametro.edu.br.evently.event.repository.EventRepository;
 import fametro.edu.br.evently.user.model.User;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Marker;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +63,8 @@ public class EventService {
                 .category(category)
                 .organizer(organizer)
                 .eventStatus(EventStatus.ATIVO)
+                .value(form.getValue())
+                .registrationDeadline(form.getRegistrationDeadline())
                 .build();
 
         log.info("Evento '{}' criado por {}", event.getTitle(), organizer.getEmail());
@@ -87,6 +90,8 @@ public class EventService {
         event.setEventDate(form.getEventDate());
         event.setLocation(form.getLocation());
         event.setTotalSlots(form.getTotalSlots());
+        event.setRegistrationDeadline(form.getRegistrationDeadline());
+        event.setValue(form.getValue());
         event.setCategory(category);
 
         log.info("Evento '{}' atualizado", event.getTitle());
@@ -102,12 +107,15 @@ public class EventService {
 
 
     private String saveImage(MultipartFile file) {
+        log.info("saveImage chamado. file={}, isEmpty={}", file, file != null ? file.isEmpty() : "null");
         if (file == null || file.isEmpty()) return null;
         try {
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path destination = Paths.get("uploads/" + fileName);
-            Files.createDirectories(destination.getParent()); // ← Files, não File
+            Path destination = Paths.get("uploads/" + fileName).toAbsolutePath(); // ← toAbsolutePath para ver o caminho exato
+            log.info("Salvando imagem em: {}", destination);
+            Files.createDirectories(destination.getParent());
             Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+            log.info("Imagem salva com sucesso: {}", fileName);
             return fileName;
         } catch (IOException e) {
             throw new RuntimeException("Erro ao salvar imagem", e);

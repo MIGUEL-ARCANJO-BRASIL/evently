@@ -1,45 +1,54 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
     <meta charset="UTF-8">
     <title>Evently — Login</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
 </head>
 <body>
+<div class="page">
+    <div class="card">
+        <div class="icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+        </div>
+        <h1 class="brand">Evently</h1>
+        <p class="subtitle">Acesse sua conta para gerenciar eventos</p>
 
-<div class="auth-container">
-    <h1>Evently</h1>
-    <h2>Entrar na sua conta</h2>
+        <div th:if="${param.erro}" class="alert alert-erro">E-mail ou senha incorretos.</div>
+        <div th:if="${param.logout}" class="alert alert-sucesso">Você saiu com sucesso.</div>
+        <div th:if="${mensagemErro}" class="alert alert-erro" th:text="${mensagemErro}"></div>
+        <div th:if="${mensagemSucesso}" class="alert alert-sucesso" th:text="${mensagemSucesso}"></div>
 
-    <div th:if="${param.erro}" class="alert alert-erro">
-        E-mail ou senha incorretos.
+        <form th:action="@{/auth/login}" method="post">
+            <div class="field">
+                <label>E-mail</label>
+                <div class="field-wrap">
+                    <input type="email" name="username" placeholder="eu@gmail.com" required/>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="field-header">
+                    <label>Senha</label>
+                    <a href="#" class="forgot">Esqueceu a senha?</a>
+                </div>
+                <div class="field-wrap">
+                    <input type="password" name="password" placeholder="••••••••" required/>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Entrar →</button>
+        </form>
+
+        <hr class="divider"/>
+        <p class="footer-text">Não tem uma conta? <a th:href="@{/auth/register}">Cadastre-se</a></p>
     </div>
-    <div th:if="${param.logout}" class="alert alert-sucesso">
-        Você saiu com sucesso.
-    </div>
 
-    <div th:if="${mensagemErro}"
-         style="color: white; background-color: #f44336; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
-        <span th:text="${mensagemErro}"></span>
-    </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
 
-    <div th:if="${mensagemSucesso}"
-         style="color: white; background-color: #4CAF50; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
-        <span th:text="${mensagemSucesso}"></span>
-    </div>
-
-    <form th:action="@{/auth/login}" method="post" class="auth-form">
-        <input type="email" name="username" placeholder="E-mail" required>
-        <input type="password" name="password" placeholder="Senha" required>
-        <button type="submit">Entrar</button>
-    </form>
-
-    <p class="auth-link">
-        Não tem conta? <a th:href="@{/auth/register}">Cadastre-se</a>
-    </p>
 </div>
-
 </body>
 </html>

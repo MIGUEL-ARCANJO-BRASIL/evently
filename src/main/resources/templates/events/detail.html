@@ -4,60 +4,121 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${event.title} + ' — Evently'"></title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/event-detail.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-<div class="container">
 
-    <img th:if="${event.coverImage != null}"
-         th:src="@{/uploads/{img}(img=${event.coverImage})}"
-         class="detalhe-imagem" alt="Capa do evento"/>
+<div th:replace="~{fragments/navbar :: navbar('events')}"></div>
 
-    <h1 th:text="${event.title}"></h1>
+<div class="detail-page">
+    <header class="detail-hero">
+        <div class="detail-hero-image">
+            <a th:href="@{/events}" class="hero-back-btn">
+                <i data-lucide="arrow-left"></i>
+                <span>Voltar</span>
+            </a>
 
-    <span th:if="${event.category != null}"
-          class="badge-categoria"
-          th:text="${event.category.name}"></span>
+            <img th:if="${event.coverImage != null}"
+                 th:src="${event.coverImage.startsWith('http') ? event.coverImage : '/uploads/' + event.coverImage}"
+                 th:alt="${event.title}">
 
-    <p th:text="${event.description}"></p>
+            <div th:if="${event.coverImage == null}" class="detail-image-fallback">
+                Sem imagem
+            </div>
 
-    <div class="detalhe-info">
-        <p>
-            <strong>Data:</strong>
-            <span th:text="${#temporals.format(event.eventDate, 'dd/MM/yyyy HH:mm')}"></span>
-        </p>
-        <p>
-            <strong>Local:</strong>
-            <span th:text="${event.location}"></span>
-        </p>
-        <p>
-            <strong>Vagas disponíveis:</strong>
-            <span th:text="${event.availableSlots}"></span>
-        </p>
-        <p>
-            <strong>Status:</strong>
-            <span th:text="${event.eventStatus}"></span>
-        </p>
-    </div>
+            <span th:if="${event.category != null}"
+                  class="badge-categoria badge-overlay"
+                  th:text="${event.category.name}"></span>
+        </div>
+    </header>
 
-    <div class="detalhe-actions">
-        <form sec:authorize="isAuthenticated()"
-              th:action="@{/registrations/{id}(id=${event.id})}"
-              method="post">
-            <button type="submit" class="btn-primary"
-                    th:disabled="${event.availableSlots == 0}">
-                Inscrever-se
-            </button>
-        </form>
+    <main class="detail-content">
+        <section class="detail-main">
+            <h1 th:text="${event.title}"></h1>
 
-        <a sec:authorize="isAnonymous()"
-           th:href="@{/auth/login}">
-            Faça login para se inscrever
-        </a>
+            <div class="detail-meta-strip">
+                <div class="meta-chip">
+                    <i data-lucide="calendar-days" class="meta-icon"></i>
+                    <span th:text="${#temporals.format(event.eventDate, 'dd/MM/yyyy')}"></span>
+                </div>
 
-        <a th:href="@{/events}">Voltar</a>
-    </div>
+                <div class="meta-chip">
+                    <i data-lucide="map-pin" class="meta-icon"></i>
+                    <span th:text="${event.location}"></span>
+                </div>
 
+                <div class="meta-chip">
+                    <i data-lucide="users" class="meta-icon"></i>
+                    <span th:text="${event.availableSlots} + ' vagas restantes'"></span>
+                </div>
+
+                <div class="meta-chip">
+                    <i data-lucide="ticket" class="meta-icon"></i>
+                    <span th:text="${event.eventStatus}"></span>
+                </div>
+            </div>
+
+            <section class="detail-section">
+                <h2>Sobre o Evento</h2>
+                <p th:text="${event.description}"></p>
+            </section>
+        </section>
+
+        <aside class="detail-sidebar">
+            <div class="price-card">
+                <p class="price-label">A partir de</p>
+
+                <p class="price-value"
+                   th:text="${event.value == null or event.value == 0 ? 'Evento gratuito' : 'R$ ' + #numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></p>
+
+                <div class="status-row">
+                    <span class="status-label">Status:</span>
+                    <span class="status-pill"
+                          th:text="${event.eventStatus}"></span>
+                </div>
+
+                <div class="limit-row" th:if="${event.registrationDeadline != null}">
+                    <span class="limit-label">Data Limite:</span>
+                    <span class="limit-value"
+                          th:text="${#temporals.format(event.registrationDeadline, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+
+                <form sec:authorize="isAuthenticated()"
+                      th:action="@{/registrations/{id}(id=${event.id})}"
+                      method="post">
+                    <button type="submit"
+                            class="btn-primary"
+                            th:disabled="${event.availableSlots == 0}">
+                        Inscrever-se
+                    </button>
+                </form>
+
+                <a sec:authorize="isAnonymous()"
+                   th:href="@{/auth/login}"
+                   class="btn-primary">
+                    Faça login para se inscrever
+                </a>
+
+                <a th:href="@{/events}" class="btn-secondary">Ver Programação</a>
+
+                <div class="share-row">
+                    <span>Compartilhar:</span>
+                    <button type="button" class="icon-btn" aria-label="Compartilhar">
+                        <i data-lucide="share-2"></i>
+                    </button>
+                    <button type="button" class="icon-btn" aria-label="Favoritar">
+                        <i data-lucide="heart"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </main>
 </div>
+
+<script>
+    lucide.createIcons();
+</script>
 </body>
 </html>
