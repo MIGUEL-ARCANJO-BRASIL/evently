@@ -1,0 +1,61 @@
+/* Centraliza o container na tela */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+}
+
+.auth-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* A MÁGICA: Faz o formulário empilhar os itens */
+.auth-form {
+    display: flex;
+    flex-direction: column; /* Alinha em coluna (um embaixo do outro) */
+    gap: 15px;             /* Espaço entre os inputs */
+}
+
+.auth-form input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%;           /* Garante que ocupe a largura total */
+    box-sizing: border-box; /* Evita que o padding "estique" o input */
+}
+
+.auth-form button {
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.auth-form button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilos das mensagens de alerta */
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.alert-erro { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.alert-sucesso { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }

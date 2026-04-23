@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${event.title} + ' — Evently'"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+
+    <img th:if="${event.coverImage != null}"
+         th:src="@{/uploads/{img}(img=${event.coverImage})}"
+         class="detalhe-imagem" alt="Capa do evento"/>
+
+    <h1 th:text="${event.title}"></h1>
+
+    <span th:if="${event.category != null}"
+          class="badge-categoria"
+          th:text="${event.category.name}"></span>
+
+    <p th:text="${event.description}"></p>
+
+    <div class="detalhe-info">
+        <p>
+            <strong>Data:</strong>
+            <span th:text="${#temporals.format(event.eventDate, 'dd/MM/yyyy HH:mm')}"></span>
+        </p>
+        <p>
+            <strong>Local:</strong>
+            <span th:text="${event.location}"></span>
+        </p>
+        <p>
+            <strong>Vagas disponíveis:</strong>
+            <span th:text="${event.availableSlots}"></span>
+        </p>
+        <p>
+            <strong>Status:</strong>
+            <span th:text="${event.eventStatus}"></span>
+        </p>
+    </div>
+
+    <div class="detalhe-actions">
+        <form sec:authorize="isAuthenticated()"
+              th:action="@{/registrations/{id}(id=${event.id})}"
+              method="post">
+            <button type="submit" class="btn-primary"
+                    th:disabled="${event.availableSlots == 0}">
+                Inscrever-se
+            </button>
+        </form>
+
+        <a sec:authorize="isAnonymous()"
+           th:href="@{/auth/login}">
+            Faça login para se inscrever
+        </a>
+
+        <a th:href="@{/events}">Voltar</a>
+    </div>
+
+</div>
+</body>
+</html>

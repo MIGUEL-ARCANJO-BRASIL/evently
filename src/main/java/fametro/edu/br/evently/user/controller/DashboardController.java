@@ -1,4 +1,4 @@
-package fametro.edu.br.evently.auth.controller;
+package fametro.edu.br.evently.user.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -9,14 +9,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.security.Principal;
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/dashboard")
 @RequiredArgsConstructor
-public class AdminController {
+public class DashboardController {
 
-    @GetMapping("/dashboard")
-    public String dashboard(Model model, Principal
-            principal) {
+    @GetMapping
+    public String dashboard(Model model, Principal principal) {
         model.addAttribute("usuario", principal.getName());
-        return "admin/dashboard"; // templates/admin/dashboard.html
+        return "dashboard";
     }
 }

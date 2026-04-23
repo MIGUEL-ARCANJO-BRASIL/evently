@@ -1,4 +1,4 @@
-package fametro.edu.br.evently.auth.dto.request;
+package fametro.edu.br.evently.auth.dto;
 
 import fametro.edu.br.evently.user.enums.Role;
 import jakarta.validation.constraints.Email;
@@ -14,7 +14,7 @@ import org.hibernate.validator.constraints.br.CPF;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserRegisterRequestDTO {
+public class UserRegisterDTO {
 
     @NotBlank(message = "Nome é obrigatório")
     private String name;

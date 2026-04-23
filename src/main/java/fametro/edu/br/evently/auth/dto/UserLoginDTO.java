@@ -1,4 +1,4 @@
-package fametro.edu.br.evently.auth.dto.request;
+package fametro.edu.br.evently.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserLoginRequestDTO {
+public class UserLoginDTO {
     private String email;
     private String password;
 }

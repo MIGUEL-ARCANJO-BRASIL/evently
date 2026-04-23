@@ -3,8 +3,8 @@ package fametro.edu.br.evently.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,8 +23,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/register",
-                                "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/auth/**", "/css/**", "/js/**", "/images/**", "/uploads/**", "/error").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/events", "/events/{id}").permitAll() // listagem/detalhe públicos
+                        .requestMatchers("/events/*/edit", "/events/*/archive", "/events/new").hasAnyRole("ADMIN", "ORGANIZADOR") // edição exige login
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/organizador/**").hasAnyRole("ADMIN", "ORGANIZADOR")
                         .anyRequest().authenticated()
@@ -32,7 +33,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
-                        .successHandler(successHandler)        // ← aqui
+                        .successHandler(successHandler)
                         .failureUrl("/auth/login?erro=true")
                         .permitAll()
                 )
@@ -43,8 +44,9 @@ public class SecurityConfig {
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
-                )
-                .userDetailsService(userDetailsService);
+                );
+
+        http.authenticationProvider(authenticationProvider());
 
         return http.build();
     }
@@ -55,8 +57,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
-        return config.getAuthenticationManager();
+    public DaoAuthenticationProvider authenticationProvider() {
+        // Passamos o userDetailsService diretamente no construtor para satisfazer o erro
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+
+        // O PasswordEncoder continua sendo via setter
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
     }
 }

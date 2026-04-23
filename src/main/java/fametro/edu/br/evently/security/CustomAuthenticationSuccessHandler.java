@@ -26,7 +26,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         System.out.println(">>> ROLE DO USUÁRIO: " + role); // ← adiciona isso
 
         switch (role) {
-            case "ROLE_ADMIN"        -> response.sendRedirect("/admin/dashboard");
+            case "ROLE_ADMIN"        -> response.sendRedirect("/events");
             case "ROLE_ORGANIZADOR"  -> response.sendRedirect("/organizador/dashboard");
             case "ROLE_MEMBRO"       -> response.sendRedirect("/dashboard");
             default                  -> response.sendRedirect("/");
