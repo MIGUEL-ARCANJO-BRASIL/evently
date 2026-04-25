@@ -267,19 +267,6 @@ body {
     margin-top: 24px;
 }
 
-.page-footer {
-    width: 100%;
-    border-top: 1px solid #e9e8f5;
-    padding: 18px 28px;
-    box-sizing: border-box;
-    color: var(--text-muted);
-    font-size: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(8px);
-}
 
 .alert {
     margin-bottom: 18px;
@@ -294,11 +281,6 @@ body {
 @media (max-width: 720px) {
     .topbar,
     .hero-row,
-    .page-footer {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
     .topbar {
         height: auto;
         padding: 16px 18px;

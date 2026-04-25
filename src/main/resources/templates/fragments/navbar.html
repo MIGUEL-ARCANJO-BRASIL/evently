@@ -31,18 +31,18 @@
 
     <div class="topbar-right">
         <a sec:authorize="isAuthenticated()"
-           th:href="@{/profile}"
+           th:href="@{/user/profile}"
            class="nav-avatar-link"
            th:classappend="${activePage == 'profile'} ? ' active' : ''"
            aria-label="Meu perfil">
             <img th:if="${#authentication.principal.avatar != null and !#strings.isEmpty(#authentication.principal.avatar)}"
-                 th:src="${#authentication.principal.avatar.startsWith('http') ? #authentication.principal.avatar : '/uploads/' + #authentication.principal.avatar}"
+                 th:src="${(#authentication.principal.avatar.startsWith('http') ? #authentication.principal.avatar : '/uploads/' + #authentication.principal.avatar) + '?v=' + #temporals.createNow()}"
                  alt="Avatar do usuário"
                  class="nav-avatar-img">
 
             <span th:if="${#authentication.principal.avatar == null or #strings.isEmpty(#authentication.principal.avatar)}"
                   class="nav-avatar-placeholder"
-                  th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">
+                  th:text="${#strings.substring(#authentication.principal.name, 0, 1).toUpperCase()}">
     </span>
         </a>
         <a sec:authorize="isAnonymous()" th:href="@{/auth/login}" class="logout-link">Entrar</a>

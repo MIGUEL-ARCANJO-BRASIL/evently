@@ -73,19 +73,35 @@
                 </div>
             </div>
 
-            <div class="field">
-                <label for="cpf">CPF</label>
-                <div class="field-wrap">
-                    <input type="text"
-                           id="cpf"
-                           th:field="*{cpf}"
-                           placeholder="000.000.000-00"
-                           maxlength="14"
-                           required/>
+            <div class="field-row">
+                <div class="field">
+                    <label for="cpf">CPF</label>
+                    <div class="field-wrap">
+                        <input type="text"
+                               id="cpf"
+                               th:field="*{cpf}"
+                               placeholder="000.000.000-00"
+                               maxlength="14"
+                               required/>
+                    </div>
+                    <span class="field-erro"
+                          th:if="${#fields.hasErrors('cpf')}"
+                          th:errors="*{cpf}"></span>
                 </div>
-                <span class="field-erro"
-                      th:if="${#fields.hasErrors('cpf')}"
-                      th:errors="*{cpf}"></span>
+
+                <div class="field">
+                    <label for="birthDate">Data de Nascimento</label>
+                    <div class="field-wrap">
+                        <input type="date"
+                               id="birthDate"
+                               th:field="*{birthDate}"
+                               autocomplete="bday"
+                               required/>
+                    </div>
+                    <span class="field-erro"
+                          th:if="${#fields.hasErrors('birthDate')}"
+                          th:errors="*{birthDate}"></span>
+                </div>
             </div>
 
             <div class="field">

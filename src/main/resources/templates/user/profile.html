@@ -5,6 +5,7 @@
     <title>Meu Perfil — Evently</title>
     <link rel="stylesheet" th:href="@{/css/navbar.css}">
     <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
 </head>
 <body>
 
@@ -17,71 +18,131 @@
             <p>Gerencie suas informações pessoais e configurações de conta.</p>
         </section>
 
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+        <div th:if="${erro}" class="alert alert-error" th:text="${erro}"></div>
+
         <section class="profile-card">
+            <div class="profile-card-head">
+                <div>
+                    <h2 class="profile-card-title">Informações da Conta</h2>
+                    <p class="profile-card-subtitle">Visualize e edite seus dados quando precisar.</p>
+                </div>
+
+                <button type="button"
+                        class="edit-profile-btn"
+                        id="editProfileBtn"
+                        aria-label="Editar perfil"
+                        title="Editar perfil">
+                    <span class="edit-icon">✎</span>
+                </button>
+            </div>
+
             <div class="profile-top">
                 <div class="profile-avatar-wrap">
                     <div class="profile-avatar">
-                        <img th:if="${user.avatar != null and !#strings.isEmpty(user.avatar)}"
-                             th:src="${user.avatar.startsWith('http') ? user.avatar : '/uploads/' + user.avatar}"
-                             alt="Foto de perfil">
+                        <img id="avatarPreview"
+                             th:src="${user.avatar != null and !#strings.isEmpty(user.avatar)} ? (${user.avatar.startsWith('http')} ? ${user.avatar} : '/uploads/' + ${user.avatar}) : ''"
+                             alt="Foto de perfil"
+                             th:style="${user.avatar != null and !#strings.isEmpty(user.avatar)} ? 'display:block;' : 'display:none;'">
 
-                        <div th:if="${user.avatar == null or #strings.isEmpty(user.avatar)}"
+                        <div id="avatarPlaceholder"
                              class="profile-avatar-placeholder"
+                             th:style="${user.avatar != null and !#strings.isEmpty(user.avatar)} ? 'display:none;' : 'display:flex;'"
                              th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">
                         </div>
                     </div>
-
-                    <button type="button" class="avatar-edit-btn">✎</button>
                 </div>
 
                 <div class="profile-avatar-text">
                     <h2>Foto de Perfil</h2>
-                    <p>Recomendado: JPG ou PNG de pelo menos 400x400px.</p>
+                    <p>Escolha uma imagem JPG, JPEG, PNG ou WEBP para usar como avatar.</p>
                 </div>
             </div>
 
-            <form class="profile-form" th:action="@{/profile}" method="post" th:object="${user}">
+            <form class="profile-form"
+                  id="profileForm"
+                  th:action="@{/user/profile}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  th:object="${userForm}">
+
                 <div class="form-grid">
+                    <div class="field field-full">
+                        <label>Avatar</label>
+
+                        <div class="avatar-upload" id="avatarUploadBox">
+                            <input type="file"
+                                   id="avatarFile"
+                                   name="avatarFile"
+                                   accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                                   hidden>
+
+                            <label for="avatarFile" class="avatar-picker-btn" id="avatarPickerBtn">
+                                Escolher imagem
+                            </label>
+
+                            <span class="avatar-file-name" id="avatarFileName">
+                                Nenhum arquivo selecionado
+                            </span>
+                        </div>
+
+                        <span class="field-hint">Formatos aceitos: PNG, JPG, JPEG e WEBP.</span>
+                    </div>
+
                     <div class="field">
                         <label for="name">Nome Completo</label>
                         <div class="field-wrap">
-                            <input type="text" id="name" th:field="*{name}">
+                            <input type="text" id="name" th:field="*{name}" disabled>
                         </div>
+                        <span class="field-erro"
+                              th:if="${#fields.hasErrors('name')}"
+                              th:errors="*{name}"></span>
                     </div>
 
                     <div class="field">
                         <label for="email">E-mail</label>
                         <div class="field-wrap">
-                            <input type="email" id="email" th:field="*{email}">
+                            <input type="email" id="email" th:field="*{email}" disabled>
                         </div>
+                        <span class="field-erro"
+                              th:if="${#fields.hasErrors('email')}"
+                              th:errors="*{email}"></span>
                     </div>
 
                     <div class="field">
                         <label for="phone">Telefone</label>
                         <div class="field-wrap">
-                            <input type="text" id="phone" th:field="*{phone}">
+                            <input type="text" id="phone" th:field="*{phone}" maxlength="15" disabled>
                         </div>
+                        <span class="field-erro"
+                              th:if="${#fields.hasErrors('phone')}"
+                              th:errors="*{phone}"></span>
                     </div>
 
                     <div class="field">
                         <label for="cpf">CPF</label>
                         <div class="field-wrap">
-                            <input type="text" id="cpf" th:field="*{cpf}">
+                            <input type="text" id="cpf" th:field="*{cpf}" maxlength="14" disabled>
                         </div>
+                        <span class="field-erro"
+                              th:if="${#fields.hasErrors('cpf')}"
+                              th:errors="*{cpf}"></span>
+                    </div>
+
+                    <div class="field">
+                        <label for="birthDate">Data de Nascimento</label>
+                        <div class="field-wrap">
+                            <input type="date" id="birthDate" th:field="*{birthDate}" disabled>
+                        </div>
+                        <span class="field-erro"
+                              th:if="${#fields.hasErrors('birthDate')}"
+                              th:errors="*{birthDate}"></span>
                     </div>
                 </div>
 
-                <div class="field field-full">
-                    <label for="password">Senha</label>
-                    <div class="field-wrap password-wrap">
-                        <input type="password" id="password" placeholder="••••••••">
-                        <button type="button" class="toggle-password">👁</button>
-                    </div>
-                </div>
-
-                <div class="profile-actions">
+                <div class="profile-actions" id="profileActions" hidden>
                     <button type="submit" class="btn-save">Salvar Alterações</button>
-                    <a th:href="@{/events}" class="btn-cancel">Cancelar</a>
+                    <button type="button" class="btn-cancel" id="cancelEditBtn">Cancelar</button>
                 </div>
             </form>
 
@@ -96,5 +157,132 @@
     <div th:replace="~{fragments/footer :: footer}"></div>
 </div>
 
+<script>
+    const inputCpf = document.getElementById('cpf');
+    const inputPhone = document.getElementById('phone');
+    const avatarFile = document.getElementById('avatarFile');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+    const avatarFileName = document.getElementById('avatarFileName');
+    const avatarPickerBtn = document.getElementById('avatarPickerBtn');
+
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const profileActions = document.getElementById('profileActions');
+    const profileForm = document.getElementById('profileForm');
+
+    const textFields = profileForm.querySelectorAll('input:not([type="file"])');
+
+    const initialValues = {};
+    textFields.forEach((field) => {
+        initialValues[field.id] = field.value;
+    });
+
+    const initialAvatarSrc = avatarPreview.getAttribute('src') || '';
+
+    function setEditMode(enabled) {
+        textFields.forEach((field) => {
+            field.disabled = !enabled;
+        });
+
+        avatarPickerBtn.classList.toggle('is-disabled', !enabled);
+        avatarFile.disabled = !enabled;
+
+        profileActions.hidden = !enabled;
+        editProfileBtn.style.display = enabled ? 'none' : 'inline-flex';
+
+        if (enabled) {
+            document.getElementById('name')?.focus();
+        }
+    }
+
+    function resetFormValues() {
+        textFields.forEach((field) => {
+            if (initialValues[field.id] !== undefined) {
+                field.value = initialValues[field.id];
+            }
+        });
+
+        avatarFile.value = '';
+        avatarFileName.textContent = 'Nenhum arquivo selecionado';
+
+        if (initialAvatarSrc) {
+            avatarPreview.src = initialAvatarSrc;
+            avatarPreview.style.display = 'block';
+            avatarPlaceholder.style.display = 'none';
+        } else {
+            avatarPreview.src = '';
+            avatarPreview.style.display = 'none';
+            avatarPlaceholder.style.display = 'flex';
+        }
+    }
+
+    editProfileBtn?.addEventListener('click', () => {
+        setEditMode(true);
+    });
+
+    cancelEditBtn?.addEventListener('click', () => {
+        resetFormValues();
+        setEditMode(false);
+    });
+
+    avatarPickerBtn?.addEventListener('click', (e) => {
+        if (avatarFile.disabled) {
+            e.preventDefault();
+        }
+    });
+
+    avatarFile?.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Selecione uma imagem PNG, JPG, JPEG ou WEBP.');
+            avatarFile.value = '';
+            avatarFileName.textContent = 'Nenhum arquivo selecionado';
+            return;
+        }
+
+        avatarFileName.textContent = file.name;
+
+        const imageUrl = URL.createObjectURL(file);
+        avatarPreview.src = imageUrl;
+        avatarPreview.style.display = 'block';
+        avatarPlaceholder.style.display = 'none';
+    });
+
+    inputCpf?.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, "").slice(0, 11);
+
+        if (value.length > 9) {
+            value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2}).*/, "$1.$2.$3-$4");
+        } else if (value.length > 6) {
+            value = value.replace(/^(\d{3})(\d{3})(\d{0,3}).*/, "$1.$2.$3");
+        } else if (value.length > 3) {
+            value = value.replace(/^(\d{3})(\d{0,3}).*/, "$1.$2");
+        }
+
+        e.target.value = value;
+    });
+
+    inputPhone?.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, "").slice(0, 11);
+
+        if (value.length > 10) {
+            value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+        } else if (value.length > 6) {
+            value = value.replace(/^(\d{2})(\d{4,5})(\d{0,4}).*/, "($1) $2-$3");
+        } else if (value.length > 2) {
+            value = value.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+        } else if (value.length > 0) {
+            value = value.replace(/^(\d*)/, "($1");
+        }
+
+        e.target.value = value;
+    });
+
+    setEditMode(false);
+</script>
 </body>
 </html>

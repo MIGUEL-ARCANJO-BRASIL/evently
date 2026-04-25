@@ -2,6 +2,7 @@ package fametro.edu.br.evently.auth.controller;
 
 import fametro.edu.br.evently.auth.dto.UserRegisterDTO;
 import fametro.edu.br.evently.auth.service.AuthService;
+import fametro.edu.br.evently.user.model.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -9,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/auth")
@@ -48,11 +51,17 @@ public class AuthController {
 
         if (authService.existsByEmail(form.getEmail())) {
             model.addAttribute("erro", "Este e-mail já está cadastrado.");
+            return "auth/events";
+        }
+
+        if (authService.existsByCpf(form.getCpf())) {
+            model.addAttribute("erro", "Este CPF já está cadastrado.");
             return "auth/register";
         }
 
         authService.register(form);
         redirectAttributes.addFlashAttribute("sucesso", "Conta criada! Faça login.");
-        return "redirect:/auth/login";
+        return "redirect:/home";
     }
+
 }

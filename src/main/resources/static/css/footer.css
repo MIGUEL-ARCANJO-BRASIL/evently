@@ -1,0 +1,36 @@
+.page-footer {
+    margin-top: 48px;
+    padding: 24px 16px 32px;
+    border-top: 1px solid #e8eaf3;
+    background: #ffffff;
+    text-align: center;
+    color: #6b7280;
+}
+
+.page-footer p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.page-footer p + p {
+    margin-top: 8px;
+}
+
+.page-footer a {
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.page-footer a:hover {
+    color: #4f46e5;
+    opacity: 0.9;
+}
+
+.page-footer a:focus-visible {
+    outline: 2px solid #c7d2fe;
+    outline-offset: 3px;
+    border-radius: 4px;
+}

@@ -339,3 +339,97 @@ body {
 .btn-logout:hover {
     background: #000;
 }
+.profile-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.edit-profile-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4f46e5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+    flex-shrink: 0;
+}
+
+.edit-profile-btn:hover {
+    background: #e0e7ff;
+    transform: translateY(-1px);
+}
+
+.edit-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.avatar-upload {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    min-height: 52px;
+    padding: 12px 14px;
+    border: 1px solid #dbe1ea;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.avatar-picker-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 10px;
+    background: #4f46e5;
+    color: #ffffff;
+    font-color:#ffffff;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+label.avatar-picker-btn,
+#avatarPickerBtn {
+    color: #fff;
+}
+.avatar-picker-btn:hover {
+    background: #4338ca;
+}
+
+.avatar-picker-btn.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: auto;
+}
+
+.avatar-file-name {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.profile-form input:disabled {
+    background: #f8fafc;
+    color: #6b7280;
+    cursor: default;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.profile-actions[hidden] {
+    display: none;
+}}
