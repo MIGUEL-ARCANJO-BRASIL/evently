@@ -102,6 +102,7 @@ public class EventService {
         event.setDescription(form.getDescription());
         event.setEventDate(form.getEventDate());
         event.setLocation(form.getLocation());
+        event.setAvailableSlots(form.getTotalSlots()); // Atualiza as vagas disponíveis para o novo total
         event.setTotalSlots(form.getTotalSlots());
         event.setRegistrationDeadline(form.getRegistrationDeadline());
         event.setValue(form.getValue());
