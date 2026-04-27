@@ -1,9 +1,143 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title>Admin — Evently</title></head>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard do Organizador — Evently</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
 <body>
-<h1>Painel Admin</h1>
-<p>Bem-vindo, <span th:text="${usuario}"></span></p>
-<a th:href="@{/logout}">Sair</a>
+
+    <div th:replace="~{fragments/navbar :: navbar('dashboard')}"></div>
+
+    <main class="dashboard-container">
+        <header class="dash-header">
+            <span class="badge-role">Organizador</span>
+            <h1>Olá, <span th:text="${usuario}"></span></h1>
+            <p>Gerencie seus eventos e acompanhe o desempenho da sua conta.</p>
+        </header>
+
+        <section class="actions-grid">
+            <!-- Criar Novo Evento -->
+            <div class="action-card">
+                <div class="icon-box purple">
+                    <i data-lucide="plus"></i>
+                </div>
+                <h3>Criar Novo Evento</h3>
+                <p>Configure data, local e venda de ingressos em poucos minutos.</p>
+                <a th:href="@{/events/new}" class="action-btn purple">
+                    Começar <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+
+            <!-- Ver Meus Eventos -->
+            <div class="action-card">
+                <div class="icon-box red">
+                    <i data-lucide="calendar"></i>
+                </div>
+                <h3>Ver Meus Eventos</h3>
+                <p>Gerencie sua lista de eventos ativos, passados e rascunhos.</p>
+                <a th:href="@{/admin/my-events}" class="action-btn red">
+                    Acessar Lista <i data-lucide="list" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+
+            <!-- Relatórios -->
+            <div class="action-card">
+                <div class="icon-box green">
+                    <i data-lucide="bar-chart-2"></i>
+                </div>
+                <h3>Relatórios</h3>
+                <p>Analise vendas, engajamento e métricas financeiras detalhadas.</p>
+                <a th:href="@{/admin/reports}" class="action-btn green-outline">
+                    Visualizar Dados <i data-lucide="bar-chart" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Resumo Semanal -->
+        <section>
+            <h2 class="section-title">Resumo Semanal</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-title">Vendas Totais</div>
+                    <div class="summary-value">R$ 12.450 <span class="summary-trend trend-up">+12%</span></div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">Ingressos Vendidos</div>
+                    <div class="summary-value">342 <span class="summary-trend trend-up">+8%</span></div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">Visualizações</div>
+                    <div class="summary-value">1.8k <span class="summary-trend trend-down">-2%</span></div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">Novos Seguidores</div>
+                    <div class="summary-value">45 <span class="summary-trend trend-up">+15%</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Próximos Eventos -->
+        <section class="events-section">
+            <div class="events-header">
+                <h2 class="section-title" style="margin: 0;">Próximos Eventos</h2>
+                <a th:href="@{/admin/my-events}" class="view-all">Ver todos</a>
+            </div>
+
+            <div class="event-list">
+                <!-- Event Item 1 (Exemplo Mocado) -->
+                <div class="event-list-item">
+                    <div class="event-thumb" style="background-color: #0f172a;"></div>
+                    <div class="event-info">
+                        <h4 class="event-title">Tech Conference 2024</h4>
+                        <div class="event-meta">
+                            <span><i data-lucide="calendar"></i> 15 Out, 2024</span>
+                            <span><i data-lucide="map-pin"></i> São Paulo, SP</span>
+                        </div>
+                    </div>
+                    <div class="event-stats">
+                        <span class="status-badge">ATIVO</span>
+                        <span class="sold-info">120/200 Vendidos</span>
+                    </div>
+                    <button class="options-btn" aria-label="Opções (Editar)">
+                        <i data-lucide="more-vertical"></i>
+                    </button>
+                </div>
+
+                <!-- Event Item 2 (Exemplo Mocado) -->
+                <div class="event-list-item">
+                    <div class="event-thumb" style="background-color: #7f1d1d;"></div>
+                    <div class="event-info">
+                        <h4 class="event-title">Workshop de Design UI/UX</h4>
+                        <div class="event-meta">
+                            <span><i data-lucide="calendar"></i> 22 Out, 2024</span>
+                            <span><i data-lucide="map-pin"></i> Remoto</span>
+                        </div>
+                    </div>
+                    <div class="event-stats">
+                        <span class="status-badge">ATIVO</span>
+                        <span class="sold-info">45/50 Vendidos</span>
+                    </div>
+                    <button class="options-btn" aria-label="Opções (Editar)">
+                        <i data-lucide="more-vertical"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
+
 </html>

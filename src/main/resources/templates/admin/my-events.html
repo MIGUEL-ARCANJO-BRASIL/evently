@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Meus Eventos — Evently</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-my-events.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar('dashboard')}"></div>
+
+    <main class="dashboard-container" style="min-height: 60vh;">
+        <div style="margin-bottom: 24px;">
+            <a th:href="@{/admin/dashboard}"
+                style="display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 14px; transition: color 0.2s;"
+                onmouseover="this.style.color='#111827'" onmouseout="this.style.color='#6b7280'">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> Voltar ao Dashboard
+            </a>
+        </div>
+
+        <div class="my-events-header">
+            <h1 class="my-events-title">Meus Eventos</h1>
+            <a th:href="@{/events/new}" class="action-btn purple">
+                <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Novo Evento
+            </a>
+        </div>
+
+        <section class="hero-row" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div class="filter-container" style="position: relative; display: inline-block;">
+                <button id="filterToggle" class="pill"
+                    style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: white; border: 1px solid #e5e7eb; color: #374151; font-weight: 500; padding: 10px 16px; border-radius: 8px;">
+                    <i data-lucide="filter" style="width: 16px; height: 16px;"></i>
+                    <span th:text="${param.category != null ? param.category[0] : 'Todas as Categorias'}">Categorias</span>
+                    <i data-lucide="chevron-down" style="width: 16px; height: 16px; margin-left: 4px;"></i>
+                </button>
+
+                <div id="filterMenu"
+                    style="display: none; position: absolute; top: 100%; left: 0; margin-top: 8px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 50; min-width: 220px; max-height: 300px; overflow-y: auto; padding: 8px;">
+                    <a th:href="@{/admin/my-events(query=${param.query})}" class="filter-link"
+                        style="display: block; padding: 10px 16px; color: #374151; text-decoration: none; border-radius: 8px; font-size: 14px; transition: background 0.2s;"
+                        onmouseover="this.style.background='#f3f4f6'"
+                        onmouseout="this.style.background='transparent'"
+                        th:styleappend="${param.category == null} ? 'font-weight: 600; background: #f3f4f6;' : ''">
+                        Todos os Eventos
+                    </a>
+                    <a th:each="cat : ${categories}"
+                        th:href="@{/admin/my-events(category=${cat.name}, query=${param.query})}" class="filter-link"
+                        style="display: block; padding: 10px 16px; color: #374151; text-decoration: none; border-radius: 8px; font-size: 14px; transition: background 0.2s; margin-top: 4px;"
+                        onmouseover="this.style.background='#f3f4f6'"
+                        onmouseout="this.style.background='transparent'"
+                        th:styleappend="${param.category != null and param.category[0] == cat.name} ? 'font-weight: 600; background: #f3f4f6;' : ''"
+                        th:text="${cat.name}">
+                    </a>
+                </div>
+            </div>
+
+            <form action="/admin/my-events" method="get" class="search-box" style="flex: 1; max-width: 300px; min-width: 200px;">
+                <input type="hidden" name="category" th:if="${param.category != null}" th:value="${param.category}">
+                <input type="text" name="query" placeholder="Buscar nos meus eventos..." th:value="${param.query}" style="width: 100%; padding: 11px 14px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; font-size: 14px; box-sizing: border-box; font-family: 'Inter', sans-serif;">
+            </form>
+        </section>
+
+        <section class="events-section">
+
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(events) and param.query == null and param.category == null}" class="empty-state">
+                <i data-lucide="calendar-x" style="width: 48px; height: 48px;"></i>
+                <h3>Nenhum evento criado</h3>
+                <p>Você ainda não criou nenhum evento. Que tal criar o seu primeiro agora?</p>
+                <a th:href="@{/events/new}" class="action-btn purple">Criar Novo Evento</a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(events) and (param.query != null or param.category != null)}" class="empty-state">
+                <i data-lucide="search-x" style="width: 48px; height: 48px;"></i>
+                <h3>Nenhum resultado encontrado</h3>
+                <p>Sua busca não retornou eventos correspondentes aos filtros.</p>
+                <a th:href="@{/admin/my-events}" class="action-btn" style="background: white; border: 1px solid #d1d5db; color: #374151;">Limpar Filtros</a>
+            </div>
+
+            <div id="live-empty-state" class="empty-state" style="display: none;">
+                <i data-lucide="search" style="width: 48px; height: 48px;"></i>
+                <h3>Nenhum resultado encontrado</h3>
+                <p>Sua busca não encontrou eventos visíveis correspondentes.</p>
+            </div>
+
+            <!-- Events List -->
+            <div th:unless="${#lists.isEmpty(events)}" class="event-list">
+
+                <div th:each="event : ${events}" class="event-list-item">
+
+                    <img th:if="${event.coverImage != null}"
+                        th:src="${event.coverImage.startsWith('http') ? event.coverImage : '/uploads/' + event.coverImage}"
+                        th:alt="${event.title}" class="event-thumb">
+
+                    <div th:if="${event.coverImage == null}" class="event-thumb"
+                        style="background-color: #0f172a; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i data-lucide="image" style="width: 24px; height: 24px; opacity: 0.5;"></i>
+                    </div>
+
+                    <div class="event-info">
+                        <h4 class="event-title" th:text="${event.title}">Título do Evento</h4>
+                        <div class="event-meta">
+                            <span>
+                                <i data-lucide="calendar"></i>
+                                <span th:text="${#temporals.format(event.eventDate, 'dd MMM, yyyy HH:mm')}">Data</span>
+                            </span>
+                            <span>
+                                <i data-lucide="map-pin"></i>
+                                <span th:text="${event.location}">Local</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="event-stats">
+                        <span class="status-badge" th:text="${event.eventStatus}"
+                            th:style="${event.eventStatus.name() == 'ARQUIVADO' ? 'background-color: #fee2e2; color: #991b1b;' : ''}">ATIVO</span>
+                        <span class="sold-info">
+                            <span th:text="${event.totalSlots - event.availableSlots}">0</span>/<span
+                                th:text="${event.totalSlots}">0</span> Inscritos
+                        </span>
+                    </div>
+
+                    <div class="options-container" style="position: relative;">
+                        <button class="options-btn" aria-label="Opções" onclick="toggleDropdown(this)">
+                            <i data-lucide="more-vertical"></i>
+                        </button>
+                        <div class="options-dropdown" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10; min-width: 140px; overflow: hidden;">
+                            <a th:href="@{/events/{id}/edit(id=${event.id})}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #374151; text-decoration: none; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                                <i data-lucide="edit-2" style="width: 16px; height: 16px;"></i> Editar
+                            </a>
+                            <button type="button" th:if="${event.eventStatus.name() == 'ATIVO'}" th:data-event-id="${event.id}" onclick="openArchiveModal(this.getAttribute('data-event-id'), 'ARQUIVADO')" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #dc2626; text-decoration: none; font-size: 14px; background: none; border: none; width: 100%; text-align: left; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">
+                                <i data-lucide="archive" style="width: 16px; height: 16px;"></i> Arquivar
+                            </button>
+                            <button type="button" th:if="${event.eventStatus.name() == 'ARQUIVADO'}" th:data-event-id="${event.id}" onclick="openArchiveModal(this.getAttribute('data-event-id'), 'ATIVO')" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #16a34a; text-decoration: none; font-size: 14px; background: none; border: none; width: 100%; text-align: left; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='transparent'">
+                                <i data-lucide="archive-restore" style="width: 16px; height: 16px;"></i> Desarquivar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal de Arquivamento -->
+    <div id="archiveModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 16px; padding: 32px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); margin: 0 20px;">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                <div id="archiveModalIcon" style="width: 48px; height: 48px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; color: #dc2626; flex-shrink: 0;">
+                    <i data-lucide="alert-triangle"></i>
+                </div>
+                <h3 id="archiveModalTitle" style="margin: 0; font-size: 20px; font-weight: 700; color: #111827;">Arquivar Evento</h3>
+            </div>
+            <p id="archiveModalDesc" style="margin: 0 0 24px; color: #6b7280; line-height: 1.5; font-size: 15px;">Tem certeza que deseja arquivar este evento?</p>
+            <form id="archiveForm" method="post" style="display: flex; gap: 12px; justify-content: flex-end;">
+                <input type="hidden" name="status" id="archiveStatusInput" value="ARQUIVADO">
+                <button type="button" onclick="closeArchiveModal()" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #d1d5db; background: white; color: #374151; font-weight: 600; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='white'">Cancelar</button>
+                <button type="submit" id="archiveModalBtn" style="padding: 10px 20px; border-radius: 8px; border: none; background: #dc2626; color: white; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2); transition: 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">Sim, arquivar</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script>
+        lucide.createIcons();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const searchInput = document.querySelector('input[name="query"]');
+            const eventCards = document.querySelectorAll('.event-list-item');
+            const liveEmptyState = document.getElementById('live-empty-state');
+            const searchForm = document.querySelector('.search-box');
+
+            // Lógica do menu dropdown de categorias
+            const filterToggle = document.getElementById('filterToggle');
+            const filterMenu = document.getElementById('filterMenu');
+
+            if (filterToggle && filterMenu) {
+                filterToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    filterMenu.style.display = filterMenu.style.display === 'none' ? 'block' : 'none';
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!filterMenu.contains(e.target)) {
+                        filterMenu.style.display = 'none';
+                    }
+                });
+            }
+
+            if (!searchInput) return;
+
+            // Função de pesquisa ao vivo
+            searchInput.addEventListener('input', function () {
+                const searchTerm = this.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                eventCards.forEach(card => {
+                    const title = card.querySelector('.event-title').textContent.toLowerCase();
+
+                    if (title.includes(searchTerm)) {
+                        card.style.display = 'flex';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Mostrar mensagem caso nada seja encontrado no frontend
+                if (visibleCount === 0 && eventCards.length > 0) {
+                    liveEmptyState.style.display = 'block';
+                } else {
+                    liveEmptyState.style.display = 'none';
+                }
+
+                // Atualizar os links das categorias para manter a pesquisa
+                const pills = document.querySelectorAll('.filter-link');
+                pills.forEach(pill => {
+                    const url = new URL(pill.href);
+                    if (searchTerm) {
+                        url.searchParams.set('query', searchInput.value);
+                    } else {
+                        url.searchParams.delete('query');
+                    }
+                    pill.href = url.toString();
+                });
+
+                // Atualizar a URL atual silenciosamente para poder compartilhar o link
+                const currentUrl = new URL(window.location);
+                if (searchInput.value) {
+                    currentUrl.searchParams.set('query', searchInput.value);
+                } else {
+                    currentUrl.searchParams.delete('query');
+                }
+                window.history.replaceState({}, '', currentUrl);
+            });
+
+            // Impede o recarregamento da página ao dar Enter
+            if (searchForm) {
+                searchForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                });
+            }
+        });
+
+        function toggleDropdown(btn) {
+            const dropdown = btn.nextElementSibling;
+            const isVisible = dropdown.style.display === 'block';
+            document.querySelectorAll('.options-dropdown').forEach(d => d.style.display = 'none');
+            if (!isVisible) {
+                dropdown.style.display = 'block';
+                // Evita que o click no botão se propague e feche o menu imediatamente
+                event.stopPropagation();
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.options-container')) {
+                document.querySelectorAll('.options-dropdown').forEach(d => d.style.display = 'none');
+            }
+        });
+
+        function openArchiveModal(eventId, action) {
+            const modal = document.getElementById('archiveModal');
+            const form = document.getElementById('archiveForm');
+            const title = document.getElementById('archiveModalTitle');
+            const desc = document.getElementById('archiveModalDesc');
+            const btn = document.getElementById('archiveModalBtn');
+            const iconContainer = document.getElementById('archiveModalIcon');
+            const statusInput = document.getElementById('archiveStatusInput');
+
+            form.action = `/events/${eventId}/archive`;
+            statusInput.value = action;
+
+            if (action === 'ARQUIVADO') {
+                title.textContent = 'Arquivar Evento';
+                desc.textContent = 'Tem certeza que deseja arquivar este evento? Ele não estará mais visível para o público, mas seus dados e inscrições serão mantidos no sistema.';
+                btn.textContent = 'Sim, arquivar';
+                btn.style.background = '#dc2626';
+                btn.style.boxShadow = '0 4px 6px rgba(220, 38, 38, 0.2)';
+                iconContainer.style.background = '#fee2e2';
+                iconContainer.style.color = '#dc2626';
+                iconContainer.innerHTML = '<i data-lucide="alert-triangle"></i>';
+            } else {
+                title.textContent = 'Desarquivar Evento';
+                desc.textContent = 'Tem certeza que deseja desarquivar este evento? Ele voltará a ficar visível para o público e poderá receber novas inscrições.';
+                btn.textContent = 'Sim, desarquivar';
+                btn.style.background = '#16a34a';
+                btn.style.boxShadow = '0 4px 6px rgba(22, 163, 74, 0.2)';
+                iconContainer.style.background = '#dcfce7';
+                iconContainer.style.color = '#16a34a';
+                iconContainer.innerHTML = '<i data-lucide="archive-restore"></i>';
+            }
+            lucide.createIcons();
+            modal.style.display = 'flex';
+        }
+
+        function closeArchiveModal() {
+            const modal = document.getElementById('archiveModal');
+            modal.style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>

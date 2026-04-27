@@ -9,14 +9,13 @@ import fametro.edu.br.evently.event.repository.EventRepository;
 import fametro.edu.br.evently.user.model.User;
 import fametro.edu.br.evently.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Marker;
+
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,12 +33,22 @@ public class EventService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
-    public List<Event> findAllActive() {
-        return eventRepository.findAllByEventStatus(EventStatus.ATIVO);
+
+    public List<Event> findFiltered(String category, String query) {
+        String categoryParam = (category != null && !category.trim().isEmpty()) ? category : null;
+        String queryParam = (query != null && !query.trim().isEmpty()) ? query : null;
+        return eventRepository.findFilteredEvents(EventStatus.ATIVO, categoryParam, queryParam);
     }
 
-    public List<Event> findAll() {
-        return eventRepository.findAll();
+    public List<Event> findAllByOrganizer(UUID organizerId) {
+        return eventRepository.findAllByOrganizer_IdOrderByEventStatusDesc(organizerId);
+
+    }
+
+    public List<Event> findFilteredByOrganizer(UUID organizerId, String category, String query) {
+        String categoryParam = (category != null && !category.trim().isEmpty()) ? category : null;
+        String queryParam = (query != null && !query.trim().isEmpty()) ? query : null;
+        return eventRepository.findFilteredEventsByOrganizer(organizerId, categoryParam, queryParam);
     }
 
     public Event findById(UUID id) {
@@ -102,20 +111,29 @@ public class EventService {
         return eventRepository.save(event);
     }
 
-    public void archive(UUID id) {
+    public void archiveOrUnarchive(UUID id, EventStatus eventStatus) {
         Event event = findById(id);
-        event.setEventStatus(EventStatus.ARQUIVADO);
+        if (eventStatus == event.getEventStatus()) return;
+        event.setEventStatus(eventStatus);
+        eventRepository.save(event);
+        log.info("Status do evento '{}' alterado", event.getTitle());
+    }
+
+    public void unarchive(UUID id) {
+        Event event = findById(id);
+        event.setEventStatus(EventStatus.ATIVO);
         eventRepository.save(event);
         log.info("Evento '{}' desativado", event.getTitle());
     }
 
-
     private String saveImage(MultipartFile file) {
         log.info("saveImage chamado. file={}, isEmpty={}", file, file != null ? file.isEmpty() : "null");
-        if (file == null || file.isEmpty()) return null;
+        if (file == null || file.isEmpty())
+            return null;
         try {
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path destination = Paths.get("uploads/" + fileName).toAbsolutePath(); // ← toAbsolutePath para ver o caminho exato
+            Path destination = Paths.get("uploads/" + fileName).toAbsolutePath(); // ← toAbsolutePath para ver o caminho
+            // exato
             log.info("Salvando imagem em: {}", destination);
             Files.createDirectories(destination.getParent());
             Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);

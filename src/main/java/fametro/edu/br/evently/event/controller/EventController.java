@@ -4,7 +4,6 @@ import fametro.edu.br.evently.event.dto.EventFormDTO;
 import fametro.edu.br.evently.event.model.Event;
 import fametro.edu.br.evently.event.service.CategoryService;
 import fametro.edu.br.evently.event.service.EventService;
-import fametro.edu.br.evently.security.UserDetailsServiceImpl;
 import fametro.edu.br.evently.user.model.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +30,12 @@ public class EventController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public String list(Model model) {
-        List<Event> lista = eventService.findAllActive();
-        System.out.println("Quantidade de eventos ativos encontrados: " + lista.size());
+    public String list(@RequestParam(required = false) String category, 
+                       @RequestParam(required = false) String query, 
+                       Model model) {
+        List<Event> lista = eventService.findFiltered(category, query);
         model.addAttribute("events", lista);
+        model.addAttribute("categories", categoryService.findAll());
         return "events/home";
     }
 
@@ -80,9 +81,11 @@ public class EventController {
         EventFormDTO form = new EventFormDTO();
         form.setTitle(event.getTitle());
         form.setDescription(event.getDescription());
-        form.setEventDate(event.getEventDate()); // Verifique se o nome do campo no DTO bate
+        form.setEventDate(event.getEventDate());
         form.setLocation(event.getLocation());
         form.setTotalSlots(event.getTotalSlots());
+        form.setValue(event.getValue());
+        form.setRegistrationDeadline(event.getRegistrationDeadline());
         if (event.getCategory() != null) {
             form.setCategoryId(event.getCategory().getId());
         }
@@ -125,9 +128,11 @@ public class EventController {
 
     @PostMapping("/{id}/archive")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
-    public String delete(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
-        eventService.archive(id);
-        redirectAttributes.addFlashAttribute("sucesso", "Evento Arquivado!");
-        return "redirect:/events";
+    public String archive(@PathVariable UUID id, @RequestParam fametro.edu.br.evently.event.enums.EventStatus status, RedirectAttributes redirectAttributes) {
+        eventService.archiveOrUnarchive(id, status);
+        String msg = status == fametro.edu.br.evently.event.enums.EventStatus.ARQUIVADO ? "Evento Arquivado!" : "Evento Desarquivado!";
+        redirectAttributes.addFlashAttribute("sucesso", msg);
+        return "redirect:/admin/my-events";
     }
+
 }

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+
 <head>
     <meta charset="UTF-8">
     <title>Eventos — Evently</title>
@@ -9,126 +9,220 @@
     <link rel="stylesheet" th:href="@{/css/footer.css}">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
 
-<div class="events-page">
-    <div th:replace="~{fragments/navbar :: navbar('events')}"></div>
+    <div class="events-page">
+        <div th:replace="~{fragments/navbar :: navbar('events')}"></div>
 
-    <main class="events-content">
-        <section class="hero-row">
-            <div>
-                <h1 class="events-title">Próximos Eventos</h1>
+        <main class="events-content">
+            <section class="hero-row">
+                <div>
+                    <h1 class="events-title">Próximos Eventos</h1>
 
-                <div class="category-pills">
-                    <a href="#" class="pill active">Todos</a>
-                    <a href="#" class="pill">Tecnologia</a>
-                    <a href="#" class="pill">Acadêmico</a>
-                    <a href="#" class="pill">Design</a>
-                    <a href="#" class="pill">Música</a>
-                </div>
-            </div>
+                    <div class="filter-container" style="position: relative; display: inline-block;">
+                        <button id="filterToggle" class="pill"
+                            style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: white; border: 1px solid #e5e7eb; color: #374151; font-weight: 500;">
+                            <i data-lucide="filter" style="width: 16px; height: 16px;"></i>
+                            <span
+                                th:text="${param.category != null ? param.category[0] : 'Todas as Categorias'}">Categorias</span>
+                            <i data-lucide="chevron-down" style="width: 16px; height: 16px; margin-left: 4px;"></i>
+                        </button>
 
-            <div class="search-box">
-                <input type="text" placeholder="Buscar eventos...">
-            </div>
-        </section>
-
-        <div th:if="${sucesso}" class="alert alert-sucesso">
-            <span th:text="${sucesso}"></span>
-        </div>
-
-        <section class="events-grid">
-            <article th:each="event : ${events}" class="event-card">
-                <div class="event-image">
-                    <img th:if="${event.coverImage != null}"
-                         th:src="${event.coverImage.startsWith('http') ? event.coverImage : '/uploads/' + event.coverImage}"
-                         alt="Capa do evento"/>
-                    <div th:if="${event.coverImage == null}" class="card-sem-imagem">
-                        Sem imagem
-                    </div>
-                    <div class="event-price">
-        <span th:if="${event.value == null or event.value == 0}" class="price-free">
-            Gratuito
-        </span>
-
-                        <span th:if="${event.value != null and event.value > 0}" class="price-paid">
-            R$ <span th:text="${#numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></span>
-        </span>
-                    </div>
-
-
-                    <span th:if="${event.category != null}"
-                          class="badge-categoria"
-                          th:text="${event.category.name}"></span>
-
-                    <span class="badge-status"
-                          th:text="${event.eventStatus}"
-                          th:classappend="${event.eventStatus.name() == 'ATIVO'} ? 'status-ativo' :
-                          (${event.eventStatus.name() == 'CANCELADO'} ? 'status-cancelado' :
-                          'status-outros')">
-                    </span>
-                </div>
-
-                <div class="event-body">
-                    <div class="event-price">
-        <span th:if="${event.value == null or event.value == 0}" class="price-free">
-            Gratuito
-        </span>
-
-                        <span th:if="${event.value != null and event.value > 0}" class="price-paid">
-            R$ <span th:text="${#numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></span>
-        </span>
-                    </div>
-
-                    <h2 th:text="${event.title}"></h2>
-
-                    <p th:text="${event.description}"></p>
-
-
-
-                    <ul class="event-meta">
-                        <li class="meta-item">
-                            <i data-lucide="calendar-days" class="meta-icon"></i>
-                            <span th:text="${#temporals.format(event.eventDate, 'dd/MM/yy')} + ' às ' + ${#temporals.format(event.eventDate, 'HH')} + 'h'"></span>
-                        </li>
-
-                        <li class="meta-item">
-                            <i data-lucide="map-pin" class="meta-icon"></i>
-                            <span th:text="${event.location}"></span>
-                        </li>
-
-                        <li class="meta-item">
-                            <i data-lucide="users" class="meta-icon"></i>
-                            <span th:text="${event.availableSlots} + ' vagas disponíveis'"></span>
-                        </li>
-                    </ul>
-
-                    <div class="event-actions">
-                        <a th:href="@{/events/{id}(id=${event.id})}" class="btn-details">Ver Detalhes</a>
-
-                        <div sec:authorize="hasAnyRole('ADMIN','ORGANIZADOR')" class="admin-actions">
-                            <a th:href="@{/events/{id}/edit(id=${event.id})}" class="icon-action">✎</a>
-                            <form th:action="@{/events/{id}/archive(id=${event.id})}" method="post">
-                                <button type="submit" class="icon-action"
-                                        onclick="return confirm('Deseja arquivar este evento?')">
-                                    🗑
-                                </button>
-                            </form>
+                        <div id="filterMenu"
+                            style="display: none; position: absolute; top: 100%; left: 0; margin-top: 8px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 50; min-width: 220px; max-height: 300px; overflow-y: auto; padding: 8px;">
+                            <a th:href="@{/events(query=${param.query})}" class="filter-link"
+                                style="display: block; padding: 10px 16px; color: #374151; text-decoration: none; border-radius: 8px; font-size: 14px; transition: background 0.2s;"
+                                onmouseover="this.style.background='#f3f4f6'"
+                                onmouseout="this.style.background='transparent'"
+                                th:styleappend="${param.category == null} ? 'font-weight: 600; background: #f3f4f6;' : ''">
+                                Todos os Eventos
+                            </a>
+                            <a th:each="cat : ${categories}"
+                                th:href="@{/events(category=${cat.name}, query=${param.query})}" class="filter-link"
+                                style="display: block; padding: 10px 16px; color: #374151; text-decoration: none; border-radius: 8px; font-size: 14px; transition: background 0.2s; margin-top: 4px;"
+                                onmouseover="this.style.background='#f3f4f6'"
+                                onmouseout="this.style.background='transparent'"
+                                th:styleappend="${param.category != null and param.category[0] == cat.name} ? 'font-weight: 600; background: #f3f4f6;' : ''"
+                                th:text="${cat.name}">
+                            </a>
                         </div>
                     </div>
                 </div>
-            </article>
-        </section>
 
-        <p th:if="${#lists.isEmpty(events)}" class="empty-state">Nenhum evento disponível.</p>
-    </main>
+                <form action="/events" method="get" class="search-box">
+                    <input type="hidden" name="category" th:if="${param.category != null}" th:value="${param.category}">
+                    <input type="text" name="query" placeholder="Buscar eventos..." th:value="${param.query}">
+                </form>
+            </section>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
+            <div th:if="${sucesso}" class="alert alert-sucesso">
+                <span th:text="${sucesso}"></span>
+            </div>
 
-</div>
+            <section class="events-grid">
+                <article th:each="event : ${events}" class="event-card">
+                    <div class="event-image">
+                        <img th:if="${event.coverImage != null}"
+                            th:src="${event.coverImage.startsWith('http') ? event.coverImage : '/uploads/' + event.coverImage}"
+                            alt="Capa do evento" />
+                        <div th:if="${event.coverImage == null}" class="card-sem-imagem">
+                            Sem imagem
+                        </div>
+                        <div class="event-price">
+                            <span th:if="${event.value == null or event.value == 0}" class="price-free">
+                                Gratuito
+                            </span>
+
+                            <span th:if="${event.value != null and event.value > 0}" class="price-paid">
+                                R$ <span
+                                    th:text="${#numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></span>
+                            </span>
+                        </div>
+
+
+                        <span th:if="${event.category != null}" class="badge-categoria"
+                            th:text="${event.category.name}"></span>
+
+                        <span class="badge-status" th:text="${event.eventStatus}" th:classappend="${event.eventStatus.name() == 'ATIVO'} ? 'status-ativo' :
+                          (${event.eventStatus.name() == 'CANCELADO'} ? 'status-cancelado' :
+                          'status-outros')">
+                        </span>
+                    </div>
+
+                    <div class="event-body">
+                        <div class="event-price">
+                            <span th:if="${event.value == null or event.value == 0}" class="price-free">
+                                Gratuito
+                            </span>
+
+                            <span th:if="${event.value != null and event.value > 0}" class="price-paid">
+                                R$ <span
+                                    th:text="${#numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></span>
+                            </span>
+                        </div>
+
+                        <h2 th:text="${event.title}"></h2>
+
+                        <p th:text="${event.description}"></p>
+
+
+
+                        <ul class="event-meta">
+                            <li class="meta-item">
+                                <i data-lucide="calendar-days" class="meta-icon"></i>
+                                <span
+                                    th:text="${#temporals.format(event.eventDate, 'dd/MM/yy')} + ' às ' + ${#temporals.format(event.eventDate, 'HH')} + 'h'"></span>
+                            </li>
+
+                            <li class="meta-item">
+                                <i data-lucide="map-pin" class="meta-icon"></i>
+                                <span th:text="${event.location}"></span>
+                            </li>
+
+                            <li class="meta-item">
+                                <i data-lucide="users" class="meta-icon"></i>
+                                <span th:text="${event.availableSlots} + ' vagas disponíveis'"></span>
+                            </li>
+                        </ul>
+
+                        <div class="event-actions">
+                            <a th:href="@{/events/{id}(id=${event.id})}" class="btn-details">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <p th:if="${#lists.isEmpty(events)}" class="empty-state">Nenhum evento disponível.</p>
+            <p id="live-empty-state" class="empty-state" style="display: none;">Nenhum evento encontrado para esta
+                pesquisa.</p>
+        </main>
+
+        <div th:replace="~{fragments/footer :: footer}"></div>
+
+    </div>
 
 </body>
 <script>
     lucide.createIcons();
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const searchInput = document.querySelector('input[name="query"]');
+        const eventCards = document.querySelectorAll('.event-card');
+        const liveEmptyState = document.getElementById('live-empty-state');
+        const searchForm = document.querySelector('.search-box');
+
+        // Lógica do menu dropdown de categorias
+        const filterToggle = document.getElementById('filterToggle');
+        const filterMenu = document.getElementById('filterMenu');
+
+        if (filterToggle && filterMenu) {
+            filterToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                filterMenu.style.display = filterMenu.style.display === 'none' ? 'block' : 'none';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!filterMenu.contains(e.target)) {
+                    filterMenu.style.display = 'none';
+                }
+            });
+        }
+
+        if (!searchInput) return;
+
+        // Função de pesquisa ao vivo
+        searchInput.addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            eventCards.forEach(card => {
+                const title = card.querySelector('h2').textContent.toLowerCase();
+
+                if (title.includes(searchTerm)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Mostrar mensagem caso nada seja encontrado no frontend
+            if (visibleCount === 0 && eventCards.length > 0) {
+                liveEmptyState.style.display = 'block';
+            } else {
+                liveEmptyState.style.display = 'none';
+            }
+
+            // Atualizar os links das categorias para manter a pesquisa
+            const pills = document.querySelectorAll('.filter-link');
+            pills.forEach(pill => {
+                const url = new URL(pill.href);
+                if (searchTerm) {
+                    url.searchParams.set('query', searchInput.value);
+                } else {
+                    url.searchParams.delete('query');
+                }
+                pill.href = url.toString();
+            });
+
+            // Atualizar a URL atual silenciosamente para poder compartilhar o link
+            const currentUrl = new URL(window.location);
+            if (searchInput.value) {
+                currentUrl.searchParams.set('query', searchInput.value);
+            } else {
+                currentUrl.searchParams.delete('query');
+            }
+            window.history.replaceState({}, '', currentUrl);
+        });
+
+        // Impede o recarregamento da página ao dar Enter (já que a busca é ao vivo)
+        if (searchForm) {
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+            });
+        }
+    });
 </script>
+
 </html>

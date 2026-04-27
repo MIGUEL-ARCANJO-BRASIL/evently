@@ -1,0 +1,37 @@
+ .my-events-header {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-bottom: 32px;
+ }
+
+ .my-events-title {
+     margin: 0;
+     font-size: 28px;
+     font-weight: 800;
+     color: var(--text-main);
+ }
+
+ .empty-state {
+     text-align: center;
+     padding: 64px 20px;
+     background: var(--card-bg);
+     border: 1px dashed var(--border-color);
+     border-radius: 16px;
+ }
+
+ .empty-state i {
+     color: var(--text-muted);
+     margin-bottom: 16px;
+ }
+
+ .empty-state h3 {
+     font-size: 20px;
+     margin: 0 0 8px 0;
+     color: var(--text-main);
+ }
+
+ .empty-state p {
+     color: var(--text-muted);
+     margin: 0 0 24px 0;
+ }
