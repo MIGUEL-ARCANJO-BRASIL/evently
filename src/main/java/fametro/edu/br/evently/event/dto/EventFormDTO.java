@@ -1,10 +1,7 @@
 package fametro.edu.br.evently.event.dto;
 
 import fametro.edu.br.evently.event.enums.EventStatus;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,6 +30,7 @@ public class EventFormDTO {
 
     @NotNull(message = "Data e hora são obrigatórias")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @Future(message = "A data do evento deve ser no futuro")
     private LocalDateTime eventDate;
 
     @NotNull(message = "Data e hora são obrigatórias")

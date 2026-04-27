@@ -1,10 +1,8 @@
 package fametro.edu.br.evently.auth.service;
 
-import fametro.edu.br.evently.auth.dto.UserLoginDTO;
 import fametro.edu.br.evently.auth.dto.UserRegisterDTO;
 import fametro.edu.br.evently.user.model.User;
 import fametro.edu.br.evently.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;

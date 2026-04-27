@@ -2,14 +2,15 @@ package fametro.edu.br.evently.event.controller;
 
 import fametro.edu.br.evently.event.dto.EventFormDTO;
 import fametro.edu.br.evently.event.model.Event;
-import fametro.edu.br.evently.event.repository.CategoryRepository;
+import fametro.edu.br.evently.event.service.CategoryService;
 import fametro.edu.br.evently.event.service.EventService;
+import fametro.edu.br.evently.security.UserDetailsServiceImpl;
 import fametro.edu.br.evently.user.model.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,7 +28,7 @@ import java.util.UUID;
 public class EventController {
 
     private final EventService eventService;
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
     @GetMapping
     public String list(Model model) {
@@ -46,28 +47,29 @@ public class EventController {
     @GetMapping("/new")
     public String newForm(Model model) {
         model.addAttribute("eventForm", new EventFormDTO());
-        model.addAttribute("categories", categoryRepository.findAll());
-        return "events/form"; // Sem a palavra 'templates/'
+        model.addAttribute("categories", categoryService.findAll());
+        return "events/create-event"; // Sem a palavra 'templates/'
     }
 
     @PostMapping("/new")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
-    public String save(@Valid @ModelAttribute("eventForm") EventFormDTO form,
-                       BindingResult result,
-                       Model model,
-                       Authentication authentication,
-                       RedirectAttributes redirectAttributes) {
+    public String createEvent(@Valid @ModelAttribute("eventForm") EventFormDTO form,
+                              BindingResult result,
+                              @AuthenticationPrincipal User organizer,
+                              Model model,
+                              RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
-            model.addAttribute("categories", categoryRepository.findAll());
-            return "templates/events/form";
+            model.addAttribute("categories", categoryService.findAll());
+            return "events/create-event";
         }
 
-        User user = (User) authentication.getPrincipal();
-        eventService.save(form, user);
+        eventService.create(form, organizer);
+
         redirectAttributes.addFlashAttribute("sucesso", "Evento criado com sucesso!");
         return "redirect:/events";
     }
+
 
     @GetMapping("/{id}/edit")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
@@ -87,7 +89,7 @@ public class EventController {
 
         model.addAttribute("event", event); // Para usar o ID no th:action
         model.addAttribute("eventForm", form); // Agora o formulário já nasce preenchido
-        model.addAttribute("categories", categoryRepository.findAll());
+        model.addAttribute("categories", categoryService.findAll());
 
         return "events/form-edit";
     }
@@ -102,7 +104,7 @@ public class EventController {
                          RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
-            model.addAttribute("categories", categoryRepository.findAll());
+            model.addAttribute("categories", categoryService.findAll());
             model.addAttribute("event", eventService.findById(id));
             return "events/form-edit";
         }

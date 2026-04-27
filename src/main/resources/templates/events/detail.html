@@ -17,10 +17,6 @@
 <div class="detail-page">
     <header class="detail-hero">
         <div class="detail-hero-image">
-            <a th:href="@{/events}" class="hero-back-btn">
-                <i data-lucide="arrow-left"></i>
-                <span>Voltar</span>
-            </a>
 
             <img th:if="${event.coverImage != null}"
                  th:src="${event.coverImage.startsWith('http') ? event.coverImage : '/uploads/' + event.coverImage}"

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Evento — Evently</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/create-event.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar('create')}"></div>
+
+<main class="create-event-page">
+    <section class="create-event-layout">
+
+        <aside class="create-event-side">
+            <span class="side-kicker">NOVO EVENTO</span>
+            <h1>Dê vida à sua ideia.</h1>
+            <p>Preencha os detalhes para criar uma experiência inesquecível para seus convidados.</p>
+
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <i data-lucide="lightbulb"></i>
+                </div>
+                <div>
+                    <strong>Dica Pro</strong>
+                    <p>Eventos com descrições detalhadas e boas imagens têm mais engajamento.</p>
+                </div>
+            </div>
+        </aside>
+
+        <section class="create-event-card">
+            <form id="createEventForm"
+                  th:action="@{/events/new}"
+                  method="post"
+                  th:object="${eventForm}"
+                  enctype="multipart/form-data">
+
+                <div class="form-group full">
+                    <label for="title">Título do Evento</label>
+                    <input type="text"
+                           id="title"
+                           th:field="*{title}"
+                           placeholder="Ex: Workshop de Design Minimalista">
+                    <span class="field-error"
+                          th:if="${#fields.hasErrors('title')}"
+                          th:errors="*{title}"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="categoryId">Categoria</label>
+                        <select id="categoryId" th:field="*{categoryId}">
+                            <option value="">Selecione uma categoria</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.name}"></option>
+                        </select>
+                        <span class="field-error"
+                              th:if="${#fields.hasErrors('categoryId')}"
+                              th:errors="*{categoryId}"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totalSlots">Vagas Disponíveis</label>
+                        <input type="number"
+                               id="totalSlots"
+                               th:field="*{totalSlots}"
+                               min="1"
+                               placeholder="0">
+                        <span class="field-error"
+                              th:if="${#fields.hasErrors('totalSlots')}"
+                              th:errors="*{totalSlots}"></span>
+                    </div>
+                </div>
+
+                <div class="form-group full">
+                    <label for="description">Descrição</label>
+                    <textarea id="description"
+                              th:field="*{description}"
+                              rows="5"
+                              placeholder="Conte mais sobre o que vai acontecer..."></textarea>
+                    <span class="field-error"
+                          th:if="${#fields.hasErrors('description')}"
+                          th:errors="*{description}"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventDate">Data e Hora</label>
+                        <input type="datetime-local"
+                               id="eventDate"
+                               th:field="*{eventDate}">
+                        <span class="field-error"
+                              th:if="${#fields.hasErrors('eventDate')}"
+                              th:errors="*{eventDate}"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Local</label>
+                        <input type="text"
+                               id="location"
+                               th:field="*{location}"
+                               placeholder="Endereço ou Link (Remoto)">
+                        <span class="field-error"
+                              th:if="${#fields.hasErrors('location')}"
+                              th:errors="*{location}"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="registrationDeadline">Prazo de Inscrição</label>
+                        <input type="datetime-local"
+                               id="registrationDeadline"
+                               th:field="*{registrationDeadline}">
+                        <span class="field-error"
+                              th:if="${#fields.hasErrors('registrationDeadline')}"
+                              th:errors="*{registrationDeadline}"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="valueMasked">Valor</label>
+
+                        <input type="text"
+                               id="valueMasked"
+                               placeholder="0,00"
+                               inputmode="numeric"
+                               autocomplete="off">
+
+                        <input type="hidden"
+                               id="value"
+                               th:field="*{value}">
+
+                        <span class="field-error"
+                              th:if="${#fields.hasErrors('value')}"
+                              th:errors="*{value}"></span>
+                    </div>
+                </div>
+
+                <div class="form-group full">
+                    <label for="coverImage">Imagem de Capa</label>
+
+                    <label for="coverImage" class="upload-box">
+        <span class="upload-icon">
+            <i data-lucide="upload"></i>
+        </span>
+                        <span class="upload-title">Clique para enviar ou arraste</span>
+                        <span class="upload-subtitle">JPG, PNG ou WebP</span>
+                    </label>
+
+                    <input type="file"
+                           id="coverImage"
+                           th:field="*{coverImage}"
+                           accept=".jpg,.jpeg,.png,.webp"
+                           hidden>
+
+                    <div class="image-preview" id="imagePreview" style="display: none;">
+                        <img id="previewImg" alt="Pré-visualização da imagem de capa">
+                    </div>
+
+                    <span class="field-error"
+                          th:if="${#fields.hasErrors('coverImage')}"
+                          th:errors="*{coverImage}"></span>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Criar Evento</button>
+                    <a th:href="@{/events}" class="btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    lucide.createIcons();
+
+    const form = document.getElementById('createEventForm');
+    const coverInput = document.getElementById('coverImage');
+    const previewWrapper = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const valueMaskedInput = document.getElementById('valueMasked');
+    const valueHiddenInput = document.getElementById('value');
+
+    const STORAGE_KEY = 'evently-create-event-draft';
+
+    function formatCurrencyBR(value) {
+        const digits = value.replace(/\D/g, '');
+
+        if (!digits) return '';
+
+        const number = Number(digits) / 100;
+
+        return new Intl.NumberFormat('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(number);
+    }
+
+    function normalizeCurrencyValue(value) {
+        const digits = value.replace(/\D/g, '');
+
+        if (!digits) return '';
+
+        const number = Number(digits) / 100;
+        return number.toFixed(2);
+    }
+
+    valueMaskedInput.addEventListener('input', function (e) {
+        const raw = e.target.value;
+        e.target.value = formatCurrencyBR(raw);
+        valueHiddenInput.value = normalizeCurrencyValue(raw);
+        saveFormDraft();
+    });
+
+    valueMaskedInput.addEventListener('blur', function (e) {
+        const raw = e.target.value;
+        if (!raw) return;
+
+        e.target.value = formatCurrencyBR(raw);
+        valueHiddenInput.value = normalizeCurrencyValue(raw);
+        saveFormDraft();
+    });
+
+    coverInput.addEventListener('change', async function () {
+        const file = this.files?.[0];
+
+        if (!file) {
+            previewWrapper.style.display = 'none';
+            previewImg.removeAttribute('src');
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            alert('Selecione uma imagem válida.');
+            this.value = '';
+            previewWrapper.style.display = 'none';
+            previewImg.removeAttribute('src');
+            return;
+        }
+
+        try {
+            const resizedFile = await resizeImage(file, 1600, 1600, 0.82);
+
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(resizedFile);
+            coverInput.files = dataTransfer.files;
+
+            const previewUrl = URL.createObjectURL(resizedFile);
+            previewImg.src = previewUrl;
+            previewWrapper.style.display = 'block';
+
+            previewImg.onload = () => URL.revokeObjectURL(previewUrl);
+        } catch (error) {
+            console.error('Erro ao processar imagem:', error);
+            this.value = '';
+            previewWrapper.style.display = 'none';
+            previewImg.removeAttribute('src');
+            alert('Não foi possível processar a imagem selecionada.');
+        }
+    });
+
+    function resizeImage(file, maxWidth, maxHeight, quality) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const fileUrl = URL.createObjectURL(file);
+
+            img.onload = () => {
+                let { width, height } = img;
+
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    URL.revokeObjectURL(fileUrl);
+
+                    if (!blob) {
+                        reject(new Error('Falha ao gerar imagem redimensionada.'));
+                        return;
+                    }
+
+                    const compressedFile = new File(
+                        [blob],
+                        file.name.replace(/\.\w+$/, '.jpg'),
+                        { type: 'image/jpeg' }
+                    );
+
+                    resolve(compressedFile);
+                }, 'image/jpeg', quality);
+            };
+
+            img.onerror = () => {
+                URL.revokeObjectURL(fileUrl);
+                reject(new Error('Falha ao carregar a imagem.'));
+            };
+
+            img.src = fileUrl;
+        });
+    }
+
+    function saveFormDraft() {
+        const draft = {
+            title: document.getElementById('title')?.value || '',
+            categoryId: document.getElementById('categoryId')?.value || '',
+            totalSlots: document.getElementById('totalSlots')?.value || '',
+            description: document.getElementById('description')?.value || '',
+            eventDate: document.getElementById('eventDate')?.value || '',
+            location: document.getElementById('location')?.value || '',
+            registrationDeadline: document.getElementById('registrationDeadline')?.value || '',
+            valueMasked: valueMaskedInput?.value || ''
+        };
+
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+    }
+
+    function restoreFormDraft() {
+        const saved = sessionStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+
+        try {
+            const draft = JSON.parse(saved);
+
+            if (document.getElementById('title')) document.getElementById('title').value = draft.title || '';
+            if (document.getElementById('categoryId')) document.getElementById('categoryId').value = draft.categoryId || '';
+            if (document.getElementById('totalSlots')) document.getElementById('totalSlots').value = draft.totalSlots || '';
+            if (document.getElementById('description')) document.getElementById('description').value = draft.description || '';
+            if (document.getElementById('eventDate')) document.getElementById('eventDate').value = draft.eventDate || '';
+            if (document.getElementById('location')) document.getElementById('location').value = draft.location || '';
+            if (document.getElementById('registrationDeadline')) document.getElementById('registrationDeadline').value = draft.registrationDeadline || '';
+
+            if (valueMaskedInput) {
+                valueMaskedInput.value = draft.valueMasked || '';
+                valueHiddenInput.value = normalizeCurrencyValue(draft.valueMasked || '');
+            }
+        } catch (e) {
+            console.error('Erro ao restaurar rascunho:', e);
+        }
+    }
+
+    function clearFormDraft() {
+        sessionStorage.removeItem(STORAGE_KEY);
+    }
+
+    restoreFormDraft();
+
+    form.querySelectorAll('input, textarea, select').forEach(field => {
+        if (field.id !== 'coverImage' && field.id !== 'value' && field.id !== 'valueMasked') {
+            field.addEventListener('input', saveFormDraft);
+            field.addEventListener('change', saveFormDraft);
+        }
+    });
+
+    form.addEventListener('submit', function () {
+        clearFormDraft();
+    });
+
+    document.querySelectorAll('a[href]').forEach(link => {
+        link.addEventListener('click', function () {
+            clearFormDraft();
+        });
+    });
+</script>
+>
+</body>
+</html>

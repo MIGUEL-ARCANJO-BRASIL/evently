@@ -7,6 +7,7 @@ import fametro.edu.br.evently.event.model.Event;
 import fametro.edu.br.evently.event.repository.CategoryRepository;
 import fametro.edu.br.evently.event.repository.EventRepository;
 import fametro.edu.br.evently.user.model.User;
+import fametro.edu.br.evently.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Marker;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
     public List<Event> findAllActive() {
         return eventRepository.findAllByEventStatus(EventStatus.ATIVO);
@@ -45,9 +47,11 @@ public class EventService {
                 .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
     }
 
-    public Event save(EventFormDTO form, User organizer) {
+    public Event create(EventFormDTO form, User organizer) {
+        log.info("Criando evento...");
         String imageName = saveImage(form.getCoverImage());
-
+        this.userRepository.findByEmail(organizer.getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("Organizador não encontrado"));
         Category category = form.getCategoryId() != null
                 ? categoryRepository.findById(form.getCategoryId()).orElse(null)
                 : null;
