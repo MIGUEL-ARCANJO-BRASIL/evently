@@ -136,21 +136,23 @@
                         </div>
                     </div>
 
-                    <div class="form-row" style="align-items: flex-end; margin-top: 24px;">
-                        <div class="form-group"
-                            style="display: flex; align-items: center; gap: 12px; flex-direction: row; margin-bottom: 12px;">
-                            <input type="checkbox" id="isFree" style="width: 20px; height: 20px; cursor: pointer;">
-                            <label for="isFree" style="margin-bottom: 0; cursor: pointer; font-weight: 600;">Este evento
-                                é gratuito</label>
+                    <!-- Ingressos (Tickets) -->
+                    <div class="tickets-section"
+                        style="margin-top: 24px; padding: 20px; background: #fefeff; border-radius: 12px; border: 1px solid #e0e7ff;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="margin: 0; font-size: 16px; color: #374151;">Ingressos (Lotes)</h3>
+                            <button type="button" id="addTicketBtn" class="btn-secondary"
+                                style="margin-top: 0; width: auto; padding: 6px 12px; font-size: 13px;">
+                                <i data-lucide="plus" style="width: 14px; height: 14px; margin-right: 4px;"></i>
+                                Adicionar Lote
+                            </button>
                         </div>
 
-                        <div class="form-group">
-                            <label for="valueMasked">Valor</label>
-                            <input type="text" id="valueMasked" placeholder="0,00" inputmode="numeric"
-                                autocomplete="off">
-                            <input type="hidden" id="value" th:field="*{value}">
-                            <span class="field-error" th:if="${#fields.hasErrors('value')}" th:errors="*{value}"></span>
+                        <div id="ticketsContainer">
+                            <!-- Tickets serão adicionados aqui via JS -->
                         </div>
+
                     </div>
 
                     <div class="form-group full">
@@ -193,9 +195,123 @@
         const coverInput = document.getElementById('coverImage');
         const previewWrapper = document.getElementById('imagePreview');
         const previewImg = document.getElementById('previewImg');
-        const valueMaskedInput = document.getElementById('valueMasked');
-        const valueHiddenInput = document.getElementById('value');
-        const isFreeCheckbox = document.getElementById('isFree');
+        const ticketsContainer = document.getElementById('ticketsContainer');
+        const addTicketBtn = document.getElementById('addTicketBtn');
+        let ticketCount = 0;
+
+        function addTicket(ticketData = null) {
+            const index = ticketCount++;
+            const ticketHtml = `
+                <div class="ticket-item" id="ticket-${index}" style="padding: 16px; border: 1px solid var(--border); border-radius: 14px; margin-bottom: 16px; background: white;">
+                    <div class="ticket-header">
+                        <div class="ticket-title">
+                            <i data-lucide="ticket" style="width: 16px; height: 16px;"></i>
+                            Lote #<span class="ticket-index-display">${index + 1}</span>
+                        </div>
+                        <button type="button" class="remove-ticket-btn" onclick="removeTicket(${index})" title="Remover lote">
+                            <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                        </button>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Nome do Lote</label>
+                            <input type="text" name="eventTicket[${index}].name" value="${ticketData?.name || ''}" placeholder="Ex: Primeiro Lote, VIP..." required oninput="saveFormDraft()">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <label style="margin-bottom: 0;">Valor</label>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 12px; color: var(--muted);">Grátis?</span>
+                                    <label class="switch">
+                                        <input type="checkbox" class="ticket-free-checkbox" onchange="toggleTicketFree(this, ${index})" ${ticketData?.value == 0 ? 'checked' : ''}>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <input type="text" class="ticket-value-masked" data-index="${index}" value="${ticketData?.valueMasked || ''}" placeholder="0,00" ${ticketData?.value == 0 ? 'disabled style="background: #f3f4f6;"' : ''} required oninput="handleTicketPrice(this, ${index})">
+                            <input type="hidden" name="eventTicket[${index}].value" id="ticket-value-${index}" value="${ticketData?.value || '0.00'}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quantidade</label>
+                            <input type="number" name="eventTicket[${index}].quantity" value="${ticketData?.quantity || ''}" placeholder="100" required oninput="saveFormDraft()">
+                        </div>
+                        <div class="form-group">
+                            <label>Data de Expiração</label>
+                            <input type="date" name="eventTicket[${index}].expirationDate" value="${ticketData?.expirationDate || ''}" required oninput="saveFormDraft()">
+                        </div>
+                    </div>
+                </div>
+            `;
+            ticketsContainer.insertAdjacentHTML('beforeend', ticketHtml);
+            lucide.createIcons();
+            saveFormDraft();
+        }
+
+        window.removeTicket = function (index) {
+            document.getElementById(`ticket-${index}`).remove();
+            reindexTickets();
+            saveFormDraft();
+        }
+
+        function reindexTickets() {
+            const tickets = ticketsContainer.querySelectorAll('.ticket-item');
+            ticketCount = 0;
+            tickets.forEach((ticket, newIndex) => {
+                ticket.id = `ticket-${newIndex}`;
+                ticket.querySelector('.remove-ticket-btn').setAttribute('onclick', `removeTicket(${newIndex})`);
+
+                const indexDisplay = ticket.querySelector('.ticket-index-display');
+                if (indexDisplay) indexDisplay.textContent = newIndex + 1;
+
+                const inputs = ticket.querySelectorAll('input');
+                inputs.forEach(input => {
+                    if (input.name) {
+                        input.name = input.name.replace(/\[\d+\]/, `[${newIndex}]`);
+                    }
+                    if (input.id && input.id.startsWith('ticket-value-')) {
+                        input.id = `ticket-value-${newIndex}`;
+                    }
+                    if (input.classList.contains('ticket-value-masked')) {
+                        input.setAttribute('data-index', newIndex);
+                        input.setAttribute('oninput', `handleTicketPrice(this, ${newIndex})`);
+                    }
+                    if (input.classList.contains('ticket-free-checkbox')) {
+                        input.setAttribute('onchange', `toggleTicketFree(this, ${newIndex})`);
+                    }
+                });
+                ticketCount++;
+            });
+        }
+
+        window.handleTicketPrice = function (input, index) {
+            const raw = input.value;
+            input.value = formatCurrencyBR(raw);
+            document.getElementById(`ticket-value-${index}`).value = normalizeCurrencyValue(raw);
+            saveFormDraft();
+        }
+
+        window.toggleTicketFree = function (checkbox, index) {
+            const maskedInput = document.querySelector(`.ticket-value-masked[data-index="${index}"]`);
+            const hiddenInput = document.getElementById(`ticket-value-${index}`);
+
+            if (checkbox.checked) {
+                maskedInput.value = '0,00';
+                maskedInput.disabled = true;
+                maskedInput.style.background = '#f3f4f6';
+                hiddenInput.value = '0.00';
+            } else {
+                maskedInput.value = '';
+                maskedInput.disabled = false;
+                maskedInput.style.background = 'white';
+                hiddenInput.value = '0.00';
+                maskedInput.focus();
+            }
+            saveFormDraft();
+        }
+
+        addTicketBtn.addEventListener('click', () => addTicket());
 
         // CEP Auto-fill
         const cepInput = document.getElementById('cep');
@@ -233,31 +349,12 @@
                 });
         });
 
-        // Free Event Toggle
-        isFreeCheckbox.addEventListener('change', function () {
-            if (this.checked) {
-                valueMaskedInput.value = '0,00';
-                valueHiddenInput.value = '0.00';
-                valueMaskedInput.disabled = true;
-                valueMaskedInput.style.opacity = '0.5';
-                valueMaskedInput.style.backgroundColor = '#f3f4f6';
-            } else {
-                valueMaskedInput.disabled = false;
-                valueMaskedInput.style.opacity = '1';
-                valueMaskedInput.style.backgroundColor = 'white';
-            }
-            saveFormDraft();
-        });
-
         const STORAGE_KEY = 'evently-create-event-draft';
 
         function formatCurrencyBR(value) {
             const digits = value.replace(/\D/g, '');
-
             if (!digits) return '';
-
             const number = Number(digits) / 100;
-
             return new Intl.NumberFormat('pt-BR', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -266,28 +363,10 @@
 
         function normalizeCurrencyValue(value) {
             const digits = value.replace(/\D/g, '');
-
             if (!digits) return '0.00';
-
             const number = Number(digits) / 100;
             return number.toFixed(2);
         }
-
-        valueMaskedInput.addEventListener('input', function (e) {
-            const raw = e.target.value;
-            e.target.value = formatCurrencyBR(raw);
-            valueHiddenInput.value = normalizeCurrencyValue(raw);
-            saveFormDraft();
-        });
-
-        valueMaskedInput.addEventListener('blur', function (e) {
-            const raw = e.target.value;
-            if (!raw) return;
-
-            e.target.value = formatCurrencyBR(raw);
-            valueHiddenInput.value = normalizeCurrencyValue(raw);
-            saveFormDraft();
-        });
 
         coverInput.addEventListener('change', async function () {
             const file = this.files?.[0];
@@ -376,6 +455,18 @@
         }
 
         function saveFormDraft() {
+            const tickets = [];
+            document.querySelectorAll('.ticket-item').forEach(item => {
+                const index = item.id.split('-')[1];
+                tickets.push({
+                    name: item.querySelector(`input[name="eventTicket[${index}].name"]`)?.value || '',
+                    valueMasked: item.querySelector('.ticket-value-masked')?.value || '',
+                    value: item.querySelector(`input[id="ticket-value-${index}"]`)?.value || '0.00',
+                    quantity: item.querySelector(`input[name="eventTicket[${index}].quantity"]`)?.value || '',
+                    expirationDate: item.querySelector(`input[name="eventTicket[${index}].expirationDate"]`)?.value || ''
+                });
+            });
+
             const draft = {
                 title: document.getElementById('title')?.value || '',
                 categoryId: document.getElementById('categoryId')?.value || '',
@@ -383,15 +474,14 @@
                 description: document.getElementById('description')?.value || '',
                 eventDate: document.getElementById('eventDate')?.value || '',
                 registrationDeadline: document.getElementById('registrationDeadline')?.value || '',
-                valueMasked: valueMaskedInput?.value || '',
-                isFree: isFreeCheckbox?.checked || false,
                 cep: cepInput?.value || '',
                 address: addressInput?.value || '',
                 number: numberInput?.value || '',
                 complement: document.getElementById('complement')?.value || '',
                 neighborhood: neighborhoodInput?.value || '',
                 city: cityInput?.value || '',
-                state: stateInput?.value || ''
+                state: stateInput?.value || '',
+                tickets: tickets
             };
 
             sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
@@ -419,18 +509,10 @@
                 if (cityInput) cityInput.value = draft.city || '';
                 if (stateInput) stateInput.value = draft.state || '';
 
-                if (isFreeCheckbox) {
-                    isFreeCheckbox.checked = draft.isFree || false;
-                    if (isFreeCheckbox.checked) {
-                        valueMaskedInput.disabled = true;
-                        valueMaskedInput.style.opacity = '0.5';
-                        valueMaskedInput.style.backgroundColor = '#f3f4f6';
-                    }
-                }
-
-                if (valueMaskedInput) {
-                    valueMaskedInput.value = draft.valueMasked || '';
-                    valueHiddenInput.value = normalizeCurrencyValue(draft.valueMasked || '');
+                if (draft.tickets && draft.tickets.length > 0) {
+                    ticketsContainer.innerHTML = '';
+                    ticketCount = 0;
+                    draft.tickets.forEach(t => addTicket(t));
                 }
             } catch (e) {
                 console.error('Erro ao restaurar rascunho:', e);

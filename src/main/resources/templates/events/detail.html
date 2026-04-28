@@ -46,7 +46,6 @@
                         <i data-lucide="map-pin" class="meta-icon"></i>
                         <span th:if="${event.eventLocalization != null}" 
                               th:text="${event.eventLocalization.city} + ', ' + ${event.eventLocalization.state}"></span>
-                        <span th:if="${event.eventLocalization == null}" th:text="${event.location}"></span>
                     </div>
 
                     <div class="meta-chip">
@@ -81,54 +80,70 @@
                         </div>
                     </div>
                     <div th:if="${event.eventLocalization == null}" class="localization-info">
-                        <div class="loc-item">
-                            <i data-lucide="map-pin"></i>
-                            <p th:text="${event.location}"></p>
-                        </div>
+                        <p style="color: #6b7280; font-size: 14px;">Endereço não informado.</p>
                     </div>
                 </section>
             </section>
 
             <aside class="detail-sidebar">
                 <div class="price-card">
-                    <p class="price-label">A partir de</p>
+                    <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 16px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em;">Escolha uma opção</h3>
+                    
+                    <div class="tickets-list" id="ticketsList">
+                        <div th:each="ticket : ${event.tickets}" class="ticket-card">
+                            <div class="ticket-info-side">
+                                <span class="ticket-name" th:text="${ticket.name}"></span>
+                                <div class="ticket-price-row">
+                                    <span class="ticket-price-main" th:text="${ticket.value == 0 ? 'Grátis' : 'R$ ' + #numbers.formatDecimal(ticket.value, 1, 'POINT', 2, 'COMMA')}"></span>
+                                    <span class="ticket-tax" th:if="${ticket.value > 0}" th:text="'(+' + #numbers.formatDecimal(ticket.value * 0.1, 1, 'POINT', 2, 'COMMA') + ' taxa)'"></span>
+                                </div>
+                                <div class="ticket-installment" th:if="${ticket.value > 100}">em até 12x</div>
+                                <div class="ticket-installment" th:if="${ticket.value <= 100 and ticket.value > 0}">em até 3x</div>
+                                <div class="ticket-deadline" th:if="${ticket.expirationDate != null}" th:text="'Vendas até ' + ${#temporals.format(ticket.expirationDate, 'dd/MM/yyyy')}"></div>
+                            </div>
+                            
+                            <div class="qty-selector">
+                                <button type="button" class="qty-btn minus" th:data-id="${ticket.id}" onclick="updateQty(this, -1)" disabled>
+                                    <i data-lucide="minus" style="width: 16px; height: 16px;"></i>
+                                </button>
+                                <span class="qty-value" th:id="'qty-' + ${ticket.id}">0</span>
+                                <button type="button" class="qty-btn plus" th:data-id="${ticket.id}" onclick="updateQty(this, 1)">
+                                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                                </button>
+                            </div>
+                        </div>
 
-                    <p class="price-value"
-                        th:text="${event.value == null or event.value == 0 ? 'Evento gratuito' : 'R$ ' + #numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}">
-                    </p>
+                        <p th:if="${#lists.isEmpty(event.tickets)}" style="color: #6b7280; font-size: 14px; text-align: center; padding: 20px;">Nenhum ingresso disponível no momento.</p>
+                    </div>
 
-                    <div class="status-row">
-                        <span class="status-label">Status:</span>
+                    <div class="checkout-section">
+                        <a href="#" class="discount-link">
+                            <i data-lucide="ticket"></i> Inserir cupom de desconto
+                        </a>
+
+                        <form sec:authorize="isAuthenticated()" th:action="@{/registrations/{id}(id=${event.id})}" method="post">
+                            <!-- Campos ocultos para os ingressos selecionados seriam adicionados aqui via JS se necessário -->
+                            <button type="submit" id="checkoutBtn" class="btn-checkout" disabled>
+                                Selecione um Ingresso
+                            </button>
+                        </form>
+
+                        <a sec:authorize="isAnonymous()" th:href="@{/auth/login}" class="btn-checkout">
+                            Faça login para comprar
+                        </a>
+
+                        <div style="margin-top: 16px;">
+                            <a href="#" style="font-size: 12px; color: #6b7280; text-decoration: underline; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                <i data-lucide="info" style="width: 14px; height: 14px;"></i> Entenda nossa taxa
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="price-card" style="margin-top: 16px; padding: 16px;">
+                     <div class="status-row" style="margin-bottom: 0;">
+                        <span class="status-label">Status do Evento:</span>
                         <span class="status-pill" th:text="${event.eventStatus}"></span>
-                    </div>
-
-                    <div class="limit-row" th:if="${event.registrationDeadline != null}">
-                        <span class="limit-label">Data Limite:</span>
-                        <span class="limit-value"
-                            th:text="${#temporals.format(event.registrationDeadline, 'dd/MM/yyyy HH:mm')}"></span>
-                    </div>
-
-                    <form sec:authorize="isAuthenticated()" th:action="@{/registrations/{id}(id=${event.id})}"
-                        method="post">
-                        <button type="submit" class="btn-primary" th:disabled="${event.availableSlots == 0}">
-                            Inscrever-se
-                        </button>
-                    </form>
-
-                    <a sec:authorize="isAnonymous()" th:href="@{/auth/login}" class="btn-primary">
-                        Faça login para se inscrever
-                    </a>
-
-                    <a th:href="@{/events}" class="btn-secondary">Ver Programação</a>
-
-                    <div class="share-row">
-                        <span>Compartilhar:</span>
-                        <button type="button" class="icon-btn" aria-label="Compartilhar">
-                            <i data-lucide="share-2"></i>
-                        </button>
-                        <button type="button" class="icon-btn" aria-label="Favoritar">
-                            <i data-lucide="heart"></i>
-                        </button>
                     </div>
                 </div>
             </aside>
@@ -138,6 +153,46 @@
 
     <script>
         lucide.createIcons();
+
+        const selections = {};
+        const checkoutBtn = document.getElementById('checkoutBtn');
+
+        function updateQty(btn, delta) {
+            const ticketId = btn.getAttribute('data-id');
+            if (!selections[ticketId]) selections[ticketId] = 0;
+            
+            const newVal = selections[ticketId] + delta;
+            
+            if (newVal >= 0 && newVal <= 5) {
+                selections[ticketId] = newVal;
+                
+                const qtyDisplay = document.getElementById(`qty-${ticketId}`);
+                qtyDisplay.textContent = newVal;
+                
+                // Update buttons state
+                const row = qtyDisplay.parentElement;
+                row.querySelector('.minus').disabled = (newVal === 0);
+                row.querySelector('.plus').disabled = (newVal === 5);
+                
+                updateCheckoutButton();
+            }
+        }
+
+        function updateCheckoutButton() {
+            if (!checkoutBtn) return;
+
+            const totalSelected = Object.values(selections).reduce((a, b) => a + b, 0);
+            
+            if (totalSelected > 0) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.textContent = 'Comprar Ingresso';
+                checkoutBtn.style.background = '#10b981'; // Green from image
+            } else {
+                checkoutBtn.disabled = true;
+                checkoutBtn.textContent = 'Selecione um Ingresso';
+                checkoutBtn.style.background = '#f3f4f6';
+            }
+        }
     </script>
 </body>
 

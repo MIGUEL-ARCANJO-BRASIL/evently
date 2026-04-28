@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -29,10 +31,6 @@ public class Event {
 
     @Column(name = "registration_deadline")
     private LocalDateTime registrationDeadline;
-
-    private Double value;
-
-    private String location;
 
     private Integer totalSlots;
 
@@ -63,4 +61,6 @@ public class Event {
 
     })
     private EventLocalization eventLocalization;
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventTicket> tickets = new ArrayList<>();
 }

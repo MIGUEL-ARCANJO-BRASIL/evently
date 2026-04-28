@@ -69,16 +69,7 @@
                         <div th:if="${event.coverImage == null}" class="card-sem-imagem">
                             Sem imagem
                         </div>
-                        <div class="event-price">
-                            <span th:if="${event.value == null or event.value == 0}" class="price-free">
-                                Gratuito
-                            </span>
-
-                            <span th:if="${event.value != null and event.value > 0}" class="price-paid">
-                                R$ <span
-                                    th:text="${#numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></span>
-                            </span>
-                        </div>
+                        <!-- Removido o bloco redundante de preço aqui -->
 
 
                         <span th:if="${event.category != null}" class="badge-categoria"
@@ -91,16 +82,7 @@
                     </div>
 
                     <div class="event-body">
-                        <div class="event-price">
-                            <span th:if="${event.value == null or event.value == 0}" class="price-free">
-                                Gratuito
-                            </span>
-
-                            <span th:if="${event.value != null and event.value > 0}" class="price-paid">
-                                R$ <span
-                                    th:text="${#numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></span>
-                            </span>
-                        </div>
+                        <!-- Preço removido dos cards conforme solicitado -->
 
                         <h2 th:text="${event.title}"></h2>
 
@@ -119,7 +101,6 @@
                                 <i data-lucide="map-pin" class="meta-icon"></i>
                                 <span th:if="${event.eventLocalization != null}" 
                                       th:text="${event.eventLocalization.city} + ', ' + ${event.eventLocalization.state}"></span>
-                                <span th:if="${event.eventLocalization == null}" th:text="${event.location}"></span>
                             </li>
 
                             <li class="meta-item">

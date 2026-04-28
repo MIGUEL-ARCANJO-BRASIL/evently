@@ -113,7 +113,8 @@
                             </span>
                             <span>
                                 <i data-lucide="map-pin"></i>
-                                <span th:text="${event.location}">Local</span>
+                                <span th:if="${event.eventLocalization != null}" 
+                                      th:text="${event.eventLocalization.city} + ', ' + ${event.eventLocalization.state}"></span>
                             </span>
                         </div>
                     </div>

@@ -83,7 +83,6 @@ public class EventController {
         form.setDescription(event.getDescription());
         form.setEventDate(event.getEventDate());
         form.setTotalSlots(event.getTotalSlots());
-        form.setValue(event.getValue());
         form.setRegistrationDeadline(event.getRegistrationDeadline());
 
         if (event.getEventLocalization() != null) {
@@ -98,6 +97,17 @@ public class EventController {
 
         if (event.getCategory() != null) {
             form.setCategoryId(event.getCategory().getId());
+        }
+
+        if (event.getTickets() != null && !event.getTickets().isEmpty()) {
+            form.setEventTicket(event.getTickets().stream()
+                .map(t -> new fametro.edu.br.evently.event.dto.EventTicketDTO(
+                    event.getId(), 
+                    t.getName(), 
+                    t.getValue(), 
+                    t.getExpirationDate(), 
+                    t.getQuantity()))
+                .toList());
         }
 
         model.addAttribute("event", event); // Para usar o ID no th:action

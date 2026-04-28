@@ -1,6 +1,7 @@
 package fametro.edu.br.evently.event.dto;
 
 import fametro.edu.br.evently.event.enums.EventStatus;
+import fametro.edu.br.evently.event.model.EventTicket;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -23,10 +25,6 @@ public class EventFormDTO {
 
     @NotBlank(message = "Descrição é obrigatória")
     private String description;
-
-    @DecimalMin(value = "0.0", message = "Valor deve ser positivo")
-    @NotNull(message = "Valor é obrigatório")
-    private Double value;
 
     @NotNull(message = "Data e hora são obrigatórias")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
@@ -44,6 +42,8 @@ public class EventFormDTO {
     private UUID categoryId;
 
     private EventStatus eventStatus = EventStatus.ATIVO;
+
+    private List<EventTicketDTO> eventTicket;
 
     private MultipartFile coverImage;
 

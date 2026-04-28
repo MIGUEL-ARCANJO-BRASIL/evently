@@ -1,20 +1,22 @@
 package fametro.edu.br.evently.event.service;
 
 import fametro.edu.br.evently.event.dto.EventFormDTO;
+import fametro.edu.br.evently.event.dto.EventTicketDTO;
 import fametro.edu.br.evently.event.enums.EventStatus;
 import fametro.edu.br.evently.event.model.Category;
 import fametro.edu.br.evently.event.model.Event;
 import fametro.edu.br.evently.event.model.EventLocalization;
+import fametro.edu.br.evently.event.model.EventTicket;
 import fametro.edu.br.evently.event.repository.CategoryRepository;
 import fametro.edu.br.evently.event.repository.EventRepository;
+import fametro.edu.br.evently.event.repository.EventTicketRepository;
 import fametro.edu.br.evently.user.model.User;
 import fametro.edu.br.evently.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -33,6 +35,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final EventTicketRepository eventTicketRepository;
 
     public List<Event> findFiltered(String category, String query) {
         String categoryParam = (category != null && !category.trim().isEmpty()) ? category : null;
@@ -56,17 +59,19 @@ public class EventService {
                 .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
     }
 
+    @Transactional
     public Event create(EventFormDTO form, User organizer) {
         log.info("Criando evento...");
-        String imageName = saveImage(form.getCoverImage());
-        this.userRepository.findByEmail(organizer.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException("Organizador não encontrado"));
-        Category category = form.getCategoryId() != null
-                ? categoryRepository.findById(form.getCategoryId()).orElse(null)
-                : null;
 
-        var eventLocalization = EventLocalization
-                .builder()
+        String imageName = saveImage(form.getCoverImage());
+
+        Category category = null;
+        if (form.getCategoryId() != null) {
+            category = categoryRepository.findById(form.getCategoryId())
+                    .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
+        }
+
+        var eventLocalization = EventLocalization.builder()
                 .cep(form.getCep())
                 .address(form.getAddress())
                 .complement(form.getComplement())
@@ -81,23 +86,43 @@ public class EventService {
                 .description(form.getDescription())
                 .eventDate(form.getEventDate())
                 .eventLocalization(eventLocalization)
-                .totalSlots(form.getTotalSlots())
-                .availableSlots(form.getTotalSlots())
                 .coverImage(imageName)
                 .category(category)
                 .organizer(organizer)
                 .eventStatus(EventStatus.ATIVO)
-                .value(form.getValue())
                 .registrationDeadline(form.getRegistrationDeadline())
+                .totalSlots(form.getTotalSlots())
+                .availableSlots(form.getTotalSlots())
                 .build();
 
-        log.info("Evento '{}' criado por {}", event.getTitle(), organizer.getEmail());
-        return eventRepository.save(event);
+        Event savedEvent = eventRepository.save(event);
+
+        if (form.getEventTicket() != null && !form.getEventTicket().isEmpty()) {
+            List<EventTicket> tickets = createTickets(form.getEventTicket(), savedEvent);
+            savedEvent.setTickets(tickets);
+        }
+
+        log.info("Evento '{}' criado por {}", savedEvent.getTitle(), organizer.getEmail());
+        return savedEvent;
     }
 
+    private List<EventTicket> createTickets(List<EventTicketDTO> dtos, Event event) {
+        List<EventTicket> tickets = dtos.stream().map(t ->
+                EventTicket.builder()
+                        .name(t.getName())
+                        .expirationDate(t.getExpirationDate())
+                        .value(t.getValue())
+                        .quantity(t.getQuantity())
+                        .event(event)
+                        .build()
+        ).toList();
+
+        return eventTicketRepository.saveAll(tickets);
+    }
     @Transactional
     public Event update(UUID id, EventFormDTO form) {
-        log.info("Dados recebidos no DTO: Título={}, Data={}", form.getTitle(), form.getEventDate());
+        log.info("Atualizando evento ID: {}", id);
+
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado"));
 
@@ -105,12 +130,13 @@ public class EventService {
             event.setCoverImage(saveImage(form.getCoverImage()));
         }
 
-        Category category = form.getCategoryId() != null
-                ? categoryRepository.findById(form.getCategoryId()).orElse(null)
-                : null;
+        if (form.getCategoryId() != null) {
+            Category category = categoryRepository.findById(form.getCategoryId())
+                    .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
+            event.setCategory(category);
+        }
 
-        var eventLocalization = EventLocalization
-                .builder()
+        var eventLocalization = EventLocalization.builder()
                 .cep(form.getCep())
                 .address(form.getAddress())
                 .complement(form.getComplement())
@@ -119,18 +145,30 @@ public class EventService {
                 .state(form.getState())
                 .neighborhood(form.getNeighborhood())
                 .build();
-
         event.setEventLocalization(eventLocalization);
+
         event.setTitle(form.getTitle());
         event.setDescription(form.getDescription());
         event.setEventDate(form.getEventDate());
-        event.setAvailableSlots(form.getTotalSlots()); // Atualiza as vagas disponíveis para o novo total
-        event.setTotalSlots(form.getTotalSlots());
         event.setRegistrationDeadline(form.getRegistrationDeadline());
-        event.setValue(form.getValue());
-        event.setCategory(category);
 
-        log.info("Evento '{}' atualizado", event.getTitle());
+        if (form.getEventTicket() != null) {
+            event.getTickets().clear();
+
+            List<EventTicket> newTickets = form.getEventTicket().stream()
+                    .map(t -> EventTicket.builder()
+                            .name(t.getName())
+                            .value(t.getValue())
+                            .quantity(t.getQuantity())
+                            .expirationDate(t.getExpirationDate())
+                            .event(event)
+                            .build())
+                    .toList();
+
+            event.getTickets().addAll(newTickets);
+        }
+
+        log.info("Evento '{}' e seus tickets foram atualizados", event.getTitle());
         return eventRepository.save(event);
     }
 

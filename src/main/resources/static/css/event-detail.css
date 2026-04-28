@@ -365,3 +365,147 @@ body {
     color: #6b7280 !important;
     font-size: 13px !important;
 }
+
+/* Ticket Selection UI */
+.ticket-card {
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    background: #fff;
+    transition: border-color 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ticket-card:hover {
+    border-color: #6366f1;
+}
+
+.ticket-info-side {
+    flex-grow: 1;
+}
+
+.ticket-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.ticket-price-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.ticket-price-main {
+    font-size: 15px;
+    font-weight: 700;
+    color: #4f46e5;
+}
+
+.ticket-tax {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.ticket-installment {
+    display: inline-block;
+    background: #ecfdf5;
+    color: #065f46;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ticket-deadline {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+/* Quantity Selector */
+.qty-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f3f4f6;
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.qty-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.qty-btn.minus {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+.qty-btn.plus {
+    background: #0ea5e9;
+    color: #fff;
+}
+
+.qty-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.qty-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    min-width: 20px;
+    text-align: center;
+}
+
+.checkout-section {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.btn-checkout {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #10b981;
+    color: white;
+}
+
+.btn-checkout:disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.discount-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #0ea5e9;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
