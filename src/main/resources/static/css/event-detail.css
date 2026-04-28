@@ -318,3 +318,50 @@ body {
         right: 12px;
     }
 }
+
+.localization-card {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.localization-info {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.loc-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.loc-item svg {
+    width: 24px;
+    height: 24px;
+    color: #4f46e5;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.loc-item strong {
+    display: block;
+    font-size: 17px;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.loc-item p {
+    margin: 2px 0 !important;
+    font-size: 14px !important;
+    color: #4b5563 !important;
+}
+
+.cep-text {
+    margin-top: 8px !important;
+    font-weight: 600;
+    color: #6b7280 !important;
+    font-size: 13px !important;
+}

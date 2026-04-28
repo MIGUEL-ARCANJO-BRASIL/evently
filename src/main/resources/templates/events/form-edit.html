@@ -60,11 +60,56 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="location">Localização</label>
-                        <input type="text" id="location" th:field="*{location}">
-                        <span class="field-error" th:if="${#fields.hasErrors('location')}"
-                            th:errors="*{location}"></span>
+                    <div class="localization-section" style="margin-top: 24px; padding: 20px; background: #f9fafb; border-radius: 12px; border: 1px solid #e5e7eb;">
+                        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #374151;">Localização</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cep">CEP</label>
+                                <input type="text" id="cep" th:field="*{cep}" placeholder="00000-000" maxlength="9">
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label for="address">Endereço</label>
+                                <input type="text" id="address" th:field="*{address}" placeholder="Rua, Avenida...">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="number">Número</label>
+                                <input type="text" id="number" th:field="*{number}" placeholder="123">
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label for="complement">Complemento</label>
+                                <input type="text" id="complement" th:field="*{complement}" placeholder="Apto, Bloco...">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="neighborhood">Bairro</label>
+                                <input type="text" id="neighborhood" th:field="*{neighborhood}" placeholder="Bairro">
+                            </div>
+                            <div class="form-group">
+                                <label for="city">Cidade</label>
+                                <input type="text" id="city" th:field="*{city}" placeholder="Cidade">
+                            </div>
+                            <div class="form-group">
+                                <label for="state">Estado</label>
+                                <input type="text" id="state" th:field="*{state}" placeholder="UF" maxlength="2">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="align-items: flex-end; margin-top: 24px; margin-bottom: 24px;">
+                        <div class="form-group" style="display: flex; align-items: center; gap: 12px; flex-direction: row; margin-bottom: 12px;">
+                            <input type="checkbox" id="isFree" style="width: 20px; height: 20px; cursor: pointer;" th:checked="${eventForm.value == 0}">
+                            <label for="isFree" style="margin-bottom: 0; cursor: pointer; font-weight: 600;">Este evento é gratuito</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="valueMasked">Valor</label>
+                            <input type="text" id="valueMasked" placeholder="0,00" inputmode="numeric" autocomplete="off" th:value="${#numbers.formatDecimal(eventForm.value, 1, 'POINT', 2, 'COMMA')}">
+                            <input type="hidden" id="value" th:field="*{value}">
+                            <span class="field-error" th:if="${#fields.hasErrors('value')}" th:errors="*{value}"></span>
+                        </div>
                     </div>
 
                     <div class="form-row">
@@ -85,9 +130,6 @@
                                 th:errors="*{categoryId}"></span>
                         </div>
                     </div>
-
-                    <!-- Mantendo os campos ocultos do valor para não dar erro de binding -->
-                    <input type="hidden" th:field="*{value}">
 
                     <div class="actions">
                         <button type="submit" class="btn btn-primary">Salvar Alterações</button>
@@ -144,6 +186,95 @@
         document.getElementById('coverImage').addEventListener('change', function (e) {
             const fileName = e.target.files[0] ? e.target.files[0].name : 'Nova Imagem';
             document.getElementById('fileName').textContent = fileName;
+        });
+
+        const valueMaskedInput = document.getElementById('valueMasked');
+        const valueHiddenInput = document.getElementById('value');
+        const isFreeCheckbox = document.getElementById('isFree');
+
+        // CEP Auto-fill
+        const cepInput = document.getElementById('cep');
+        const addressInput = document.getElementById('address');
+        const cityInput = document.getElementById('city');
+        const stateInput = document.getElementById('state');
+        const neighborhoodInput = document.getElementById('neighborhood');
+        const numberInput = document.getElementById('number');
+
+        cepInput.addEventListener('input', function (e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,5})(\d{0,3})/);
+            e.target.value = !x[2] ? x[1] : x[1] + '-' + x[2];
+        });
+
+        cepInput.addEventListener('blur', function() {
+            let cep = this.value.replace(/\D/g, '');
+            if (cep.length !== 8) return;
+
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.erro) {
+                        alert('CEP não encontrado.');
+                        return;
+                    }
+                    addressInput.value = data.logradouro || '';
+                    neighborhoodInput.value = data.bairro || '';
+                    cityInput.value = data.localidade || '';
+                    stateInput.value = data.uf || '';
+                    numberInput.focus();
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar CEP:', error);
+                });
+        });
+
+        // Free Event Toggle
+        function handleFreeToggle() {
+            if (isFreeCheckbox.checked) {
+                valueMaskedInput.value = '0,00';
+                valueHiddenInput.value = '0.00';
+                valueMaskedInput.disabled = true;
+                valueMaskedInput.style.opacity = '0.5';
+                valueMaskedInput.style.backgroundColor = '#f3f4f6';
+            } else {
+                valueMaskedInput.disabled = false;
+                valueMaskedInput.style.opacity = '1';
+                valueMaskedInput.style.backgroundColor = 'white';
+            }
+        }
+
+        isFreeCheckbox.addEventListener('change', handleFreeToggle);
+        
+        // Initial check on load
+        handleFreeToggle();
+
+        function formatCurrencyBR(value) {
+            const digits = value.replace(/\D/g, '');
+            if (!digits) return '';
+            const number = Number(digits) / 100;
+            return new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(number);
+        }
+
+        function normalizeCurrencyValue(value) {
+            const digits = value.replace(/\D/g, '');
+            if (!digits) return '0.00';
+            const number = Number(digits) / 100;
+            return number.toFixed(2);
+        }
+
+        valueMaskedInput.addEventListener('input', function (e) {
+            const raw = e.target.value;
+            e.target.value = formatCurrencyBR(raw);
+            valueHiddenInput.value = normalizeCurrencyValue(raw);
+        });
+
+        valueMaskedInput.addEventListener('blur', function (e) {
+            const raw = e.target.value;
+            if (!raw) return;
+            e.target.value = formatCurrencyBR(raw);
+            valueHiddenInput.value = normalizeCurrencyValue(raw);
         });
     </script>
 </body>

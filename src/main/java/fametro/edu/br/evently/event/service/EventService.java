@@ -4,6 +4,7 @@ import fametro.edu.br.evently.event.dto.EventFormDTO;
 import fametro.edu.br.evently.event.enums.EventStatus;
 import fametro.edu.br.evently.event.model.Category;
 import fametro.edu.br.evently.event.model.Event;
+import fametro.edu.br.evently.event.model.EventLocalization;
 import fametro.edu.br.evently.event.repository.CategoryRepository;
 import fametro.edu.br.evently.event.repository.EventRepository;
 import fametro.edu.br.evently.user.model.User;
@@ -32,7 +33,6 @@ public class EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
-
 
     public List<Event> findFiltered(String category, String query) {
         String categoryParam = (category != null && !category.trim().isEmpty()) ? category : null;
@@ -65,11 +65,22 @@ public class EventService {
                 ? categoryRepository.findById(form.getCategoryId()).orElse(null)
                 : null;
 
+        var eventLocalization = EventLocalization
+                .builder()
+                .cep(form.getCep())
+                .address(form.getAddress())
+                .complement(form.getComplement())
+                .number(form.getNumber())
+                .city(form.getCity())
+                .state(form.getState())
+                .neighborhood(form.getNeighborhood())
+                .build();
+
         Event event = Event.builder()
                 .title(form.getTitle())
                 .description(form.getDescription())
                 .eventDate(form.getEventDate())
-                .location(form.getLocation())
+                .eventLocalization(eventLocalization)
                 .totalSlots(form.getTotalSlots())
                 .availableSlots(form.getTotalSlots())
                 .coverImage(imageName)
@@ -98,10 +109,21 @@ public class EventService {
                 ? categoryRepository.findById(form.getCategoryId()).orElse(null)
                 : null;
 
+        var eventLocalization = EventLocalization
+                .builder()
+                .cep(form.getCep())
+                .address(form.getAddress())
+                .complement(form.getComplement())
+                .number(form.getNumber())
+                .city(form.getCity())
+                .state(form.getState())
+                .neighborhood(form.getNeighborhood())
+                .build();
+
+        event.setEventLocalization(eventLocalization);
         event.setTitle(form.getTitle());
         event.setDescription(form.getDescription());
         event.setEventDate(form.getEventDate());
-        event.setLocation(form.getLocation());
         event.setAvailableSlots(form.getTotalSlots()); // Atualiza as vagas disponíveis para o novo total
         event.setTotalSlots(form.getTotalSlots());
         event.setRegistrationDeadline(form.getRegistrationDeadline());
@@ -114,7 +136,8 @@ public class EventService {
 
     public void archiveOrUnarchive(UUID id, EventStatus eventStatus) {
         Event event = findById(id);
-        if (eventStatus == event.getEventStatus()) return;
+        if (eventStatus == event.getEventStatus())
+            return;
         event.setEventStatus(eventStatus);
         eventRepository.save(event);
         log.info("Status do evento '{}' alterado", event.getTitle());

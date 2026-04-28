@@ -24,7 +24,7 @@ public class EventFormDTO {
     @NotBlank(message = "Descrição é obrigatória")
     private String description;
 
-    @DecimalMin(value = "0.01", message = "Valor deve ser positivo")
+    @DecimalMin(value = "0.0", message = "Valor deve ser positivo")
     @NotNull(message = "Valor é obrigatório")
     private Double value;
 
@@ -37,9 +37,6 @@ public class EventFormDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime registrationDeadline;
 
-    @NotBlank(message = "Local é obrigatório")
-    private String location;
-
     @NotNull(message = "Vagas são obrigatórias")
     @Min(value = 1, message = "Mínimo de 1 vaga")
     private Integer totalSlots;
@@ -49,4 +46,12 @@ public class EventFormDTO {
     private EventStatus eventStatus = EventStatus.ATIVO;
 
     private MultipartFile coverImage;
+
+    private String cep;
+    private String address;
+    private String complement;
+    private String number;
+    private String neighborhood;
+    private String city;
+    private String state;
 }

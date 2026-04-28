@@ -117,7 +117,9 @@
 
                             <li class="meta-item">
                                 <i data-lucide="map-pin" class="meta-icon"></i>
-                                <span th:text="${event.location}"></span>
+                                <span th:if="${event.eventLocalization != null}" 
+                                      th:text="${event.eventLocalization.city} + ', ' + ${event.eventLocalization.state}"></span>
+                                <span th:if="${event.eventLocalization == null}" th:text="${event.location}"></span>
                             </li>
 
                             <li class="meta-item">

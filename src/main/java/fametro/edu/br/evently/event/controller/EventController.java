@@ -82,10 +82,20 @@ public class EventController {
         form.setTitle(event.getTitle());
         form.setDescription(event.getDescription());
         form.setEventDate(event.getEventDate());
-        form.setLocation(event.getLocation());
         form.setTotalSlots(event.getTotalSlots());
         form.setValue(event.getValue());
         form.setRegistrationDeadline(event.getRegistrationDeadline());
+
+        if (event.getEventLocalization() != null) {
+            form.setCep(event.getEventLocalization().getCep());
+            form.setAddress(event.getEventLocalization().getAddress());
+            form.setComplement(event.getEventLocalization().getComplement());
+            form.setNumber(event.getEventLocalization().getNumber());
+            form.setCity(event.getEventLocalization().getCity());
+            form.setState(event.getEventLocalization().getState());
+            form.setNeighborhood(event.getEventLocalization().getNeighborhood());
+        }
+
         if (event.getCategory() != null) {
             form.setCategoryId(event.getCategory().getId());
         }

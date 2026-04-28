@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+
 <head>
     <meta charset="UTF-8">
     <title th:text="${event.title} + ' — Evently'"></title>
@@ -10,114 +10,135 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
 
-<div th:replace="~{fragments/navbar :: navbar('events')}"></div>
+    <div th:replace="~{fragments/navbar :: navbar('events')}"></div>
 
-<div class="detail-page">
-    <header class="detail-hero">
-        <div class="detail-hero-image">
+    <div class="detail-page">
+        <header class="detail-hero">
+            <div class="detail-hero-image">
 
-            <img th:if="${event.coverImage != null}"
-                 th:src="${event.coverImage.startsWith('http') ? event.coverImage : '/uploads/' + event.coverImage}"
-                 th:alt="${event.title}">
+                <img th:if="${event.coverImage != null}"
+                    th:src="${event.coverImage.startsWith('http') ? event.coverImage : '/uploads/' + event.coverImage}"
+                    th:alt="${event.title}">
 
-            <div th:if="${event.coverImage == null}" class="detail-image-fallback">
-                Sem imagem
+                <div th:if="${event.coverImage == null}" class="detail-image-fallback">
+                    Sem imagem
+                </div>
+
+                <span th:if="${event.category != null}" class="badge-categoria badge-overlay"
+                    th:text="${event.category.name}"></span>
             </div>
+        </header>
 
-            <span th:if="${event.category != null}"
-                  class="badge-categoria badge-overlay"
-                  th:text="${event.category.name}"></span>
-        </div>
-    </header>
+        <main class="detail-content">
+            <section class="detail-main">
+                <h1 th:text="${event.title}"></h1>
 
-    <main class="detail-content">
-        <section class="detail-main">
-            <h1 th:text="${event.title}"></h1>
+                <div class="detail-meta-strip">
+                    <div class="meta-chip">
+                        <i data-lucide="calendar-days" class="meta-icon"></i>
+                        <span th:text="${#temporals.format(event.eventDate, 'dd/MM/yyyy')}"></span>
+                    </div>
 
-            <div class="detail-meta-strip">
-                <div class="meta-chip">
-                    <i data-lucide="calendar-days" class="meta-icon"></i>
-                    <span th:text="${#temporals.format(event.eventDate, 'dd/MM/yyyy')}"></span>
+                    <div class="meta-chip">
+                        <i data-lucide="map-pin" class="meta-icon"></i>
+                        <span th:if="${event.eventLocalization != null}" 
+                              th:text="${event.eventLocalization.city} + ', ' + ${event.eventLocalization.state}"></span>
+                        <span th:if="${event.eventLocalization == null}" th:text="${event.location}"></span>
+                    </div>
+
+                    <div class="meta-chip">
+                        <i data-lucide="users" class="meta-icon"></i>
+                        <span th:text="${event.availableSlots} + ' vagas restantes'"></span>
+                    </div>
+
+                    <div class="meta-chip">
+                        <i data-lucide="ticket" class="meta-icon"></i>
+                        <span th:text="${event.eventStatus}"></span>
+                    </div>
                 </div>
 
-                <div class="meta-chip">
-                    <i data-lucide="map-pin" class="meta-icon"></i>
-                    <span th:text="${event.location}"></span>
-                </div>
+                <section class="detail-section">
+                    <h2>Sobre o Evento</h2>
+                    <p th:text="${event.description}"></p>
+                </section>
 
-                <div class="meta-chip">
-                    <i data-lucide="users" class="meta-icon"></i>
-                    <span th:text="${event.availableSlots} + ' vagas restantes'"></span>
-                </div>
-
-                <div class="meta-chip">
-                    <i data-lucide="ticket" class="meta-icon"></i>
-                    <span th:text="${event.eventStatus}"></span>
-                </div>
-            </div>
-
-            <section class="detail-section">
-                <h2>Sobre o Evento</h2>
-                <p th:text="${event.description}"></p>
+                <section class="detail-section localization-card">
+                    <h2>Localização</h2>
+                    <div class="localization-info" th:if="${event.eventLocalization != null}">
+                        <div class="loc-item">
+                            <i data-lucide="navigation"></i>
+                            <div>
+                                <strong th:text="${event.eventLocalization.address} + ', ' + ${event.eventLocalization.number}"></strong>
+                                <p th:if="${event.eventLocalization.complement != null and !event.eventLocalization.complement.isEmpty()}" 
+                                   th:text="${event.eventLocalization.complement}"></p>
+                                <p th:text="${event.eventLocalization.neighborhood}"></p>
+                                <p th:text="${event.eventLocalization.city} + ' - ' + ${event.eventLocalization.state}"></p>
+                                <p class="cep-text" th:text="'CEP: ' + ${event.eventLocalization.cep}"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${event.eventLocalization == null}" class="localization-info">
+                        <div class="loc-item">
+                            <i data-lucide="map-pin"></i>
+                            <p th:text="${event.location}"></p>
+                        </div>
+                    </div>
+                </section>
             </section>
-        </section>
 
-        <aside class="detail-sidebar">
-            <div class="price-card">
-                <p class="price-label">A partir de</p>
+            <aside class="detail-sidebar">
+                <div class="price-card">
+                    <p class="price-label">A partir de</p>
 
-                <p class="price-value"
-                   th:text="${event.value == null or event.value == 0 ? 'Evento gratuito' : 'R$ ' + #numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}"></p>
+                    <p class="price-value"
+                        th:text="${event.value == null or event.value == 0 ? 'Evento gratuito' : 'R$ ' + #numbers.formatDecimal(event.value, 1, 'POINT', 2, 'COMMA')}">
+                    </p>
 
-                <div class="status-row">
-                    <span class="status-label">Status:</span>
-                    <span class="status-pill"
-                          th:text="${event.eventStatus}"></span>
+                    <div class="status-row">
+                        <span class="status-label">Status:</span>
+                        <span class="status-pill" th:text="${event.eventStatus}"></span>
+                    </div>
+
+                    <div class="limit-row" th:if="${event.registrationDeadline != null}">
+                        <span class="limit-label">Data Limite:</span>
+                        <span class="limit-value"
+                            th:text="${#temporals.format(event.registrationDeadline, 'dd/MM/yyyy HH:mm')}"></span>
+                    </div>
+
+                    <form sec:authorize="isAuthenticated()" th:action="@{/registrations/{id}(id=${event.id})}"
+                        method="post">
+                        <button type="submit" class="btn-primary" th:disabled="${event.availableSlots == 0}">
+                            Inscrever-se
+                        </button>
+                    </form>
+
+                    <a sec:authorize="isAnonymous()" th:href="@{/auth/login}" class="btn-primary">
+                        Faça login para se inscrever
+                    </a>
+
+                    <a th:href="@{/events}" class="btn-secondary">Ver Programação</a>
+
+                    <div class="share-row">
+                        <span>Compartilhar:</span>
+                        <button type="button" class="icon-btn" aria-label="Compartilhar">
+                            <i data-lucide="share-2"></i>
+                        </button>
+                        <button type="button" class="icon-btn" aria-label="Favoritar">
+                            <i data-lucide="heart"></i>
+                        </button>
+                    </div>
                 </div>
+            </aside>
+        </main>
+    </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
 
-                <div class="limit-row" th:if="${event.registrationDeadline != null}">
-                    <span class="limit-label">Data Limite:</span>
-                    <span class="limit-value"
-                          th:text="${#temporals.format(event.registrationDeadline, 'dd/MM/yyyy HH:mm')}"></span>
-                </div>
-
-                <form sec:authorize="isAuthenticated()"
-                      th:action="@{/registrations/{id}(id=${event.id})}"
-                      method="post">
-                    <button type="submit"
-                            class="btn-primary"
-                            th:disabled="${event.availableSlots == 0}">
-                        Inscrever-se
-                    </button>
-                </form>
-
-                <a sec:authorize="isAnonymous()"
-                   th:href="@{/auth/login}"
-                   class="btn-primary">
-                    Faça login para se inscrever
-                </a>
-
-                <a th:href="@{/events}" class="btn-secondary">Ver Programação</a>
-
-                <div class="share-row">
-                    <span>Compartilhar:</span>
-                    <button type="button" class="icon-btn" aria-label="Compartilhar">
-                        <i data-lucide="share-2"></i>
-                    </button>
-                    <button type="button" class="icon-btn" aria-label="Favoritar">
-                        <i data-lucide="heart"></i>
-                    </button>
-                </div>
-            </div>
-        </aside>
-    </main>
-</div>
-<div th:replace="~{fragments/footer :: footer}"></div>
-
-<script>
-    lucide.createIcons();
-</script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
+
 </html>

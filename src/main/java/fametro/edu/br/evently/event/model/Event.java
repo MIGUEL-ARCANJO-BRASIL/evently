@@ -50,4 +50,17 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "organizer_id")
     private User organizer;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "cep", column = @Column(name = "loc_cep")),
+            @AttributeOverride(name = "address", column = @Column(name = "loc_address")),
+            @AttributeOverride(name = "complement", column = @Column(name = "loc_complement")),
+            @AttributeOverride(name = "number", column = @Column(name = "loc_number")),
+            @AttributeOverride(name = "neighborhood", column = @Column(name = "loc_neighborhood")),
+            @AttributeOverride(name = "city", column = @Column(name = "loc_city")),
+            @AttributeOverride(name = "state", column = @Column(name = "loc_state")),
+
+    })
+    private EventLocalization eventLocalization;
 }
