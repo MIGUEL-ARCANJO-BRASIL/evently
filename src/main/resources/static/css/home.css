@@ -177,6 +177,11 @@ body {
     font-size: 14px;
     line-height: 1.5;
     color: #8b8fa3;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .event-meta {
     list-style: none;

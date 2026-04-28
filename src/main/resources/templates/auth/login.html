@@ -17,7 +17,6 @@
         <h1 class="brand">Evently</h1>
         <p class="subtitle">Acesse sua conta para gerenciar eventos</p>
 
-        <div th:if="${param.erro}" class="alert alert-erro">E-mail ou senha incorretos.</div>
         <div th:if="${mensagemErro}" class="alert alert-erro" th:text="${mensagemErro}"></div>
         <div th:if="${mensagemSucesso}" class="alert alert-sucesso" th:text="${mensagemSucesso}"></div>
 

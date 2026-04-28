@@ -183,16 +183,35 @@ body {
     border: 1px solid #dedff0;
     border-radius: 14px;
     background: #fff;
-    padding: 14px 16px;
+    padding: 10px 16px;
     font-size: 15px;
     color: var(--text);
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    line-height: 1.5;
+    height: 48px;
 }
 
 .form-group textarea {
     min-height: 126px;
     resize: vertical;
+    height: auto;
+}
+
+.form-row + .form-row {
+    margin-top: 18px;
+}
+
+.ticket-item .form-row {
+    align-items: flex-end;
+}
+
+.ticket-item .form-group {
+    gap: 0;
+}
+
+.ticket-item .form-group label {
+    margin-bottom: 8px;
 }
 
 .form-group input:focus,

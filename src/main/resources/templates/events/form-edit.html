@@ -40,7 +40,7 @@
 
                     <div class="form-group">
                         <label for="description">Descrição</label>
-                        <textarea id="description" th:field="*{description}"></textarea>
+                        <textarea id="description" th:field="*{description}" maxlength="1000"></textarea>
                         <span class="field-error" th:if="${#fields.hasErrors('description')}"
                             th:errors="*{description}"></span>
                     </div>
@@ -60,8 +60,10 @@
                         </div>
                     </div>
 
-                    <div class="localization-section" style="margin-top: 24px; padding: 20px; background: #f9fafb; border-radius: 12px; border: 1px solid #e5e7eb;">
-                        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #374151;">Localização</h3>
+                    <div class="localization-section"
+                        style="margin-top: 24px; padding: 20px; background: #f9fafb; border-radius: 12px; border: 1px solid #e5e7eb;">
+                        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #374151;">Localização
+                        </h3>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="cep">CEP</label>
@@ -79,7 +81,8 @@
                             </div>
                             <div class="form-group" style="flex: 2;">
                                 <label for="complement">Complemento</label>
-                                <input type="text" id="complement" th:field="*{complement}" placeholder="Apto, Bloco...">
+                                <input type="text" id="complement" th:field="*{complement}"
+                                    placeholder="Apto, Bloco...">
                             </div>
                         </div>
                         <div class="form-row">
@@ -99,59 +102,75 @@
                     </div>
 
                     <!-- Ingressos (Tickets) -->
-                    <div class="tickets-section" style="margin-top: 24px; padding: 20px; background: #fefeff; border-radius: 12px; border: 1px solid #e0e7ff;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                            <h3 style="margin: 0; font-size: 16px; color: #374151;">Ingressos (Lotes)</h3>
-                            <button type="button" id="addTicketBtn" class="btn-secondary" style="margin-top: 0; width: auto; padding: 6px 12px; font-size: 13px;">
-                                <i data-lucide="plus" style="width: 14px; height: 14px; margin-right: 4px;"></i> Adicionar Lote
+                    <div class="tickets-section" style="margin-top: 24px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="margin: 0; font-size: 18px; font-weight: 700;">Ingressos (Lotes)</h3>
+                            <button type="button" id="addTicketBtn" class="btn btn-secondary"
+                                style="padding: 8px 16px;">
+                                <i data-lucide="plus" style="width: 16px; height: 16px; margin-right: 6px;"></i>
+                                Adicionar Lote
                             </button>
                         </div>
 
                         <div id="ticketsContainer">
-                            <!-- Tickets serão adicionados aqui via JS -->
-                             <div th:each="ticket, iterStat : ${eventForm.eventTicket}" class="ticket-item" th:id="'ticket-' + ${iterStat.index}" style="padding: 16px; border: 1px solid var(--border); border-radius: 14px; margin-bottom: 16px; background: white;">
+                            <!-- Tickets renderizados do servidor -->
+                            <div th:each="ticket, iterStat : ${eventForm.eventTicket}" class="ticket-item"
+                                th:id="'ticket-' + ${iterStat.index}">
                                 <div class="ticket-header">
                                     <div class="ticket-title">
-                                        <i data-lucide="ticket" style="width: 16px; height: 16px;"></i>
+                                        <i data-lucide="ticket"></i>
                                         Lote #<span class="ticket-index-display" th:text="${iterStat.count}">1</span>
                                     </div>
-                                    <button type="button" class="remove-ticket-btn" th:onclick="'removeTicket(' + ${iterStat.index} + ')'" title="Remover lote">
-                                        <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                                    <button type="button" class="remove-ticket-btn"
+                                        th:onclick="'removeTicket(' + ${iterStat.index} + ')'" title="Remover lote">
+                                        <i data-lucide="trash-2"></i>
                                     </button>
                                 </div>
                                 <div class="form-row">
-                                    <div class="form-group" style="flex: 1;">
+                                    <div class="form-group">
                                         <label>Nome do Lote</label>
-                                        <input type="text" th:name="'eventTicket[' + ${iterStat.index} + '].name'" th:value="${ticket.name}" placeholder="Ex: Primeiro Lote, VIP..." required>
+                                        <input type="text" th:name="'eventTicket[' + ${iterStat.index} + '].name'"
+                                            th:value="${ticket.name}" placeholder="Ex: Primeiro Lote, VIP..." required>
                                     </div>
-                                    <div class="form-group" style="flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div class="form-group">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                                             <label style="margin-bottom: 0;">Valor</label>
                                             <div style="display: flex; align-items: center; gap: 8px;">
                                                 <span style="font-size: 12px; color: var(--muted);">Grátis?</span>
                                                 <label class="switch">
-                                                    <input type="checkbox" class="ticket-free-checkbox" th:onchange="'toggleTicketFree(this, ' + ${iterStat.index} + ')'" th:checked="${ticket.value == 0}">
+                                                    <input type="checkbox" class="ticket-free-checkbox"
+                                                        th:onchange="'toggleTicketFree(this, ' + ${iterStat.index} + ')'"
+                                                        th:checked="${ticket.value == 0}">
                                                     <span class="slider"></span>
                                                 </label>
                                             </div>
                                         </div>
-                                        <input type="text" class="ticket-value-masked" th:data-index="${iterStat.index}" th:value="${#numbers.formatDecimal(ticket.value, 1, 'POINT', 2, 'COMMA')}" placeholder="0,00" th:disabled="${ticket.value == 0}" th:style="${ticket.value == 0 ? 'background: #f3f4f6;' : ''}" required th:oninput="'handleTicketPrice(this, ' + ${iterStat.index} + ')'">
-                                        <input type="hidden" th:name="'eventTicket[' + ${iterStat.index} + '].value'" th:id="'ticket-value-' + ${iterStat.index}" th:value="${ticket.value}">
+                                        <input type="text" class="ticket-value-masked" th:data-index="${iterStat.index}"
+                                            th:value="${#numbers.formatDecimal(ticket.value, 1, 'POINT', 2, 'COMMA')}"
+                                            placeholder="0,00" th:disabled="${ticket.value == 0}"
+                                            th:style="${ticket.value == 0 ? 'background: #f3f4f6;' : ''}" required
+                                            th:oninput="'handleTicketPrice(this, ' + ${iterStat.index} + ')'">
+                                        <input type="hidden" th:name="'eventTicket[' + ${iterStat.index} + '].value'"
+                                            th:id="'ticket-value-' + ${iterStat.index}" th:value="${ticket.value}">
                                     </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Quantidade</label>
-                                        <input type="number" th:name="'eventTicket[' + ${iterStat.index} + '].quantity'" th:value="${ticket.quantity}" placeholder="100" required>
+                                        <input type="number" th:name="'eventTicket[' + ${iterStat.index} + '].quantity'"
+                                            th:value="${ticket.quantity}" placeholder="100" required>
                                     </div>
                                     <div class="form-group">
                                         <label>Data de Expiração</label>
-                                        <input type="date" th:name="'eventTicket[' + ${iterStat.index} + '].expirationDate'" th:value="${ticket.expirationDate}" required>
+                                        <input type="date"
+                                            th:name="'eventTicket[' + ${iterStat.index} + '].expirationDate'"
+                                            th:value="${ticket.expirationDate}" required>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="form-row">
@@ -179,41 +198,73 @@
                     </div>
                 </div>
 
-                <!-- Imagem e Status -->
                 <div class="card">
-                    <h2>Imagem do Evento</h2>
+                    <h2 style="margin-bottom: 16px;">Resumo do Evento</h2>
 
-                    <div class="current-image">
+                    <div class="current-image" style="height: 160px; margin-bottom: 20px;">
                         <img th:if="${event.coverImage != null}"
                             th:src="${event.coverImage.startsWith('http') ? event.coverImage : '/uploads/' + event.coverImage}"
                             alt="Capa atual">
-                        <span th:if="${event.coverImage == null}" style="color: #6b7280; font-size: 14px;">Sem
-                            imagem</span>
+                        <div th:if="${event.coverImage == null}"
+                            style="display: flex; flex-direction: column; align-items: center; color: var(--muted);">
+                            <i data-lucide="image"
+                                style="width: 48px; height: 48px; margin-bottom: 8px; opacity: 0.2;"></i>
+                            <span style="font-size: 14px;">Sem imagem de capa</span>
+                        </div>
                     </div>
 
-                    <p class="image-help">Selecione uma nova imagem para substituir a atual. Formatos recomendados: JPG,
-                        PNG (16:9).</p>
+                    <div class="summary-section"
+                        style="border-top: 1px dashed var(--border); padding-top: 24px; margin-top: 24px;">
+                        <h4 class="summary-title" style="margin-bottom: 8px;">Trocar Imagem</h4>
+                        <p class="image-help" style="margin-bottom: 12px;">Formatos recomendados: JPG, PNG (16:9).</p>
+                        <label for="coverImage" class="upload-box" style="padding: 16px; min-height: auto;">
+                            <i data-lucide="cloud-upload" style="width: 24px; height: 24px; margin-bottom: 4px;"></i>
+                            <p id="fileName" style="font-size: 13px;">Nova Imagem</p>
+                        </label>
+                        <input type="file" id="coverImage" name="coverImage" accept=".jpg,.jpeg,.png,.webp" hidden>
+                    </div>
 
-                    <label for="coverImage" class="upload-box">
-                        <i data-lucide="cloud-upload" style="width: 32px; height: 32px;"></i>
-                        <p id="fileName">Nova Imagem</p>
-                        <span>Arraste ou clique para trocar</span>
-                    </label>
-                    <!-- Nome tem que ser coverImage por causa do RequestParam no Controller -->
-                    <input type="file" id="coverImage" name="coverImage" accept=".jpg,.jpeg,.png,.webp" hidden>
-
-                    <div class="stats-box">
+                    <div class="stats-box" style="border-top: none; padding-top: 0; margin-top: 0;">
                         <div class="stat-row">
-                            <span class="stat-label">Status Atual</span>
+                            <span class="stat-label">Status do Evento</span>
                             <span class="stat-value badge" th:text="${event.eventStatus}"
                                 th:style="${event.eventStatus.name() == 'ARQUIVADO' ? 'background: #fee2e2; color: #dc2626;' : ''}">ATIVO</span>
                         </div>
                         <div class="stat-row">
-                            <span class="stat-label">Inscritos</span>
+                            <span class="stat-label">Inscrições Realizadas</span>
                             <span class="stat-value"
-                                th:text="${event.totalSlots - event.availableSlots} + '/' + ${event.totalSlots}">0/50</span>
+                                th:text="${event.totalSlots - event.availableSlots} + ' / ' + ${event.totalSlots}">0/50</span>
                         </div>
                     </div>
+
+                    <div class="summary-section">
+                        <h4 class="summary-title"><i data-lucide="ticket"></i> Ingressos</h4>
+                        <div th:each="ticket : ${event.tickets}" class="summary-item">
+                            <span th:text="${ticket.name}"
+                                style="flex: 1; color: var(--text); font-weight: 500;"></span>
+                            <span
+                                th:text="${ticket.value == 0 ? 'Grátis' : 'R$ ' + #numbers.formatDecimal(ticket.value, 1, 'POINT', 2, 'COMMA')}"
+                                style="color: var(--primary); font-weight: 700;"></span>
+                        </div>
+                        <p th:if="${#lists.isEmpty(event.tickets)}"
+                            style="font-size: 13px; color: var(--muted); margin: 0;">Nenhum lote criado.</p>
+                    </div>
+
+                    <div class="summary-section">
+                        <h4 class="summary-title"><i data-lucide="map-pin"></i> Endereço</h4>
+                        <div th:if="${event.eventLocalization != null}"
+                            style="font-size: 13px; line-height: 1.6; color: var(--muted);">
+                            <p th:text="${event.eventLocalization.address} + ', ' + ${event.eventLocalization.number}"
+                                style="margin: 0; color: var(--text); font-weight: 500;"></p>
+                            <p th:text="${event.eventLocalization.neighborhood}" style="margin: 0;"></p>
+                            <p th:text="${event.eventLocalization.city} + ' - ' + ${event.eventLocalization.state}"
+                                style="margin: 0;"></p>
+                            <p th:text="'CEP: ' + ${event.eventLocalization.cep}" style="margin: 0;"></p>
+                        </div>
+                        <p th:if="${event.eventLocalization == null}"
+                            style="font-size: 13px; color: var(--muted); margin: 0;">Endereço não informado.</p>
+                    </div>
+
                 </div>
 
             </div>
@@ -237,23 +288,23 @@
         function addTicket(ticketData = null) {
             const index = ticketCount++;
             const ticketHtml = `
-                <div class="ticket-item" id="ticket-${index}" style="padding: 16px; border: 1px solid var(--border); border-radius: 14px; margin-bottom: 16px; background: white;">
+                <div class="ticket-item" id="ticket-${index}">
                     <div class="ticket-header">
                         <div class="ticket-title">
-                            <i data-lucide="ticket" style="width: 16px; height: 16px;"></i>
+                            <i data-lucide="ticket"></i>
                             Lote #<span class="ticket-index-display">${index + 1}</span>
                         </div>
                         <button type="button" class="remove-ticket-btn" onclick="removeTicket(${index})" title="Remover lote">
-                            <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                            <i data-lucide="trash-2"></i>
                         </button>
                     </div>
                     <div class="form-row">
-                        <div class="form-group" style="flex: 1;">
+                        <div class="form-group">
                             <label>Nome do Lote</label>
                             <input type="text" name="eventTicket[${index}].name" value="${ticketData?.name || ''}" placeholder="Ex: Primeiro Lote, VIP..." required>
                         </div>
-                        <div class="form-group" style="flex: 1;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div class="form-group">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                                 <label style="margin-bottom: 0;">Valor</label>
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span style="font-size: 12px; color: var(--muted);">Grátis?</span>
@@ -283,7 +334,7 @@
             lucide.createIcons();
         }
 
-        window.removeTicket = function(index) {
+        window.removeTicket = function (index) {
             document.getElementById(`ticket-${index}`).remove();
             reindexTickets();
         }
@@ -294,7 +345,7 @@
             tickets.forEach((ticket, newIndex) => {
                 ticket.id = `ticket-${newIndex}`;
                 ticket.querySelector('.remove-ticket-btn').setAttribute('onclick', `removeTicket(${newIndex})`);
-                
+
                 const indexDisplay = ticket.querySelector('.ticket-index-display');
                 if (indexDisplay) indexDisplay.textContent = newIndex + 1;
 
@@ -318,7 +369,7 @@
             });
         }
 
-        window.handleTicketPrice = function(input, index) {
+        window.handleTicketPrice = function (input, index) {
             const raw = input.value;
             input.value = formatCurrencyBR(raw);
             document.getElementById(`ticket-value-${index}`).value = normalizeCurrencyValue(raw);
@@ -357,7 +408,7 @@
             e.target.value = !x[2] ? x[1] : x[1] + '-' + x[2];
         });
 
-        cepInput.addEventListener('blur', function() {
+        cepInput.addEventListener('blur', function () {
             let cep = this.value.replace(/\D/g, '');
             if (cep.length !== 8) return;
 

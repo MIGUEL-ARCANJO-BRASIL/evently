@@ -118,30 +118,63 @@ body {
 
 .detail-meta-strip {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    padding: 14px;
-    margin-bottom: 22px;
-    border-radius: 12px;
-    background: #f3efff;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    padding: 24px;
+    margin-bottom: 32px;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid #eef0f7;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
-.meta-chip {
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.meta-icon-box {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: #f5f3ff;
+    color: #6366f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.meta-icon-box i {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2;
+}
+
+.meta-content {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    text-align: center;
-    font-size: 12px;
-    color: #4c4f6b;
-    font-weight: 600;
+    gap: 2px;
 }
 
-.meta-icon {
-    width: 18px;
-    height: 18px;
-    color: #5b5ce2;
-    stroke-width: 2;
+.meta-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8b8fa3;
+    font-weight: 700;
+}
+
+.meta-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1f2430;
+    line-height: 1.2;
+}
+
+.meta-value.highlight {
+    color: #6366f1;
 }
 
 .detail-section h2 {
@@ -179,7 +212,6 @@ body {
     color: #4f46e5;
 }
 
-.status-row,
 .limit-row {
     display: flex;
     justify-content: space-between;
@@ -188,20 +220,8 @@ body {
     font-size: 13px;
 }
 
-.status-label,
 .limit-label {
     color: #6b7280;
-}
-
-.status-pill {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #16a34a;
-    background: #dcfce7;
-    padding: 4px 8px;
-    border-radius: 999px;
-    font-weight: 700;
 }
 
 .limit-value {
@@ -264,6 +284,34 @@ body {
 }
 
 .icon-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.maps-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 10px 18px;
+    background: #f3efff;
+    color: #6366f1;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    border: 1px solid #cfc8ff;
+}
+
+.maps-btn:hover {
+    background: #6366f1;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.maps-btn i {
     width: 16px;
     height: 16px;
 }

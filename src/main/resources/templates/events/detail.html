@@ -37,25 +37,26 @@
                 <h1 th:text="${event.title}"></h1>
 
                 <div class="detail-meta-strip">
-                    <div class="meta-chip">
-                        <i data-lucide="calendar-days" class="meta-icon"></i>
-                        <span th:text="${#temporals.format(event.eventDate, 'dd/MM/yyyy')}"></span>
+                    <div class="meta-item">
+                        <div class="meta-icon-box">
+                            <i data-lucide="calendar"></i>
+                        </div>
+                        <div class="meta-content">
+                            <span class="meta-label">Data e Hora</span>
+                            <span class="meta-value"
+                                th:text="${#temporals.format(event.eventDate, 'dd/MM/yyyy')} + ' às ' + ${#temporals.format(event.eventDate, 'HH:mm')}"></span>
+                        </div>
                     </div>
 
-                    <div class="meta-chip">
-                        <i data-lucide="map-pin" class="meta-icon"></i>
-                        <span th:if="${event.eventLocalization != null}" 
-                              th:text="${event.eventLocalization.city} + ', ' + ${event.eventLocalization.state}"></span>
-                    </div>
-
-                    <div class="meta-chip">
-                        <i data-lucide="users" class="meta-icon"></i>
-                        <span th:text="${event.availableSlots} + ' vagas restantes'"></span>
-                    </div>
-
-                    <div class="meta-chip">
-                        <i data-lucide="ticket" class="meta-icon"></i>
-                        <span th:text="${event.eventStatus}"></span>
+                    <div class="meta-item">
+                        <div class="meta-icon-box">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="meta-content">
+                            <span class="meta-label">Disponibilidade</span>
+                            <span class="meta-value highlight"
+                                th:text="${event.availableSlots} + ' vagas restantes'"></span>
+                        </div>
                     </div>
                 </div>
 
@@ -65,17 +66,24 @@
                 </section>
 
                 <section class="detail-section localization-card">
-                    <h2>Localização</h2>
+                    <h2>Local</h2>
                     <div class="localization-info" th:if="${event.eventLocalization != null}">
                         <div class="loc-item">
                             <i data-lucide="navigation"></i>
                             <div>
-                                <strong th:text="${event.eventLocalization.address} + ', ' + ${event.eventLocalization.number}"></strong>
-                                <p th:if="${event.eventLocalization.complement != null and !event.eventLocalization.complement.isEmpty()}" 
-                                   th:text="${event.eventLocalization.complement}"></p>
+                                <strong
+                                    th:text="${event.eventLocalization.address} + ', ' + ${event.eventLocalization.number}"></strong>
+                                <p th:if="${event.eventLocalization.complement != null and !event.eventLocalization.complement.isEmpty()}"
+                                    th:text="${event.eventLocalization.complement}"></p>
                                 <p th:text="${event.eventLocalization.neighborhood}"></p>
-                                <p th:text="${event.eventLocalization.city} + ' - ' + ${event.eventLocalization.state}"></p>
+                                <p th:text="${event.eventLocalization.city} + ' - ' + ${event.eventLocalization.state}">
+                                </p>
                                 <p class="cep-text" th:text="'CEP: ' + ${event.eventLocalization.cep}"></p>
+
+                                <a th:href="'https://www.google.com/maps/search/?api=1&query=' + ${#strings.replace(event.eventLocalization.address + ' ' + event.eventLocalization.number + ' ' + event.eventLocalization.neighborhood + ' ' + event.eventLocalization.city + ' ' + event.eventLocalization.state + ' ' + event.eventLocalization.cep, ' ', '+')}"
+                                    target="_blank" class="maps-btn">
+                                    <i data-lucide="map-pin"></i> VER NO MAPA
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -87,33 +95,44 @@
 
             <aside class="detail-sidebar">
                 <div class="price-card">
-                    <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 16px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em;">Escolha uma opção</h3>
-                    
+                    <h3
+                        style="margin-top: 0; margin-bottom: 20px; font-size: 16px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em;">
+                        Escolha uma opção</h3>
+
                     <div class="tickets-list" id="ticketsList">
                         <div th:each="ticket : ${event.tickets}" class="ticket-card">
                             <div class="ticket-info-side">
                                 <span class="ticket-name" th:text="${ticket.name}"></span>
                                 <div class="ticket-price-row">
-                                    <span class="ticket-price-main" th:text="${ticket.value == 0 ? 'Grátis' : 'R$ ' + #numbers.formatDecimal(ticket.value, 1, 'POINT', 2, 'COMMA')}"></span>
-                                    <span class="ticket-tax" th:if="${ticket.value > 0}" th:text="'(+' + #numbers.formatDecimal(ticket.value * 0.1, 1, 'POINT', 2, 'COMMA') + ' taxa)'"></span>
+                                    <span class="ticket-price-main"
+                                        th:text="${ticket.value == 0 ? 'Grátis' : 'R$ ' + #numbers.formatDecimal(ticket.value, 1, 'POINT', 2, 'COMMA')}"></span>
+                                    <span class="ticket-tax" th:if="${ticket.value > 0}"
+                                        th:text="'(+' + #numbers.formatDecimal(ticket.value * 0.1, 1, 'POINT', 2, 'COMMA') + ' taxa)'"></span>
                                 </div>
                                 <div class="ticket-installment" th:if="${ticket.value > 100}">em até 12x</div>
-                                <div class="ticket-installment" th:if="${ticket.value <= 100 and ticket.value > 0}">em até 3x</div>
-                                <div class="ticket-deadline" th:if="${ticket.expirationDate != null}" th:text="'Vendas até ' + ${#temporals.format(ticket.expirationDate, 'dd/MM/yyyy')}"></div>
+                                <div class="ticket-installment" th:if="${ticket.value <= 100 and ticket.value > 0}">em
+                                    até 3x</div>
+                                <div class="ticket-deadline" th:if="${ticket.expirationDate != null}"
+                                    th:text="'Vendas até ' + ${#temporals.format(ticket.expirationDate, 'dd/MM/yyyy')}">
+                                </div>
                             </div>
-                            
+
                             <div class="qty-selector">
-                                <button type="button" class="qty-btn minus" th:data-id="${ticket.id}" onclick="updateQty(this, -1)" disabled>
+                                <button type="button" class="qty-btn minus" th:data-id="${ticket.id}"
+                                    onclick="updateQty(this, -1)" disabled>
                                     <i data-lucide="minus" style="width: 16px; height: 16px;"></i>
                                 </button>
                                 <span class="qty-value" th:id="'qty-' + ${ticket.id}">0</span>
-                                <button type="button" class="qty-btn plus" th:data-id="${ticket.id}" onclick="updateQty(this, 1)">
+                                <button type="button" class="qty-btn plus" th:data-id="${ticket.id}"
+                                    onclick="updateQty(this, 1)">
                                     <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <p th:if="${#lists.isEmpty(event.tickets)}" style="color: #6b7280; font-size: 14px; text-align: center; padding: 20px;">Nenhum ingresso disponível no momento.</p>
+                        <p th:if="${#lists.isEmpty(event.tickets)}"
+                            style="color: #6b7280; font-size: 14px; text-align: center; padding: 20px;">Nenhum ingresso
+                            disponível no momento.</p>
                     </div>
 
                     <div class="checkout-section">
@@ -121,7 +140,8 @@
                             <i data-lucide="ticket"></i> Inserir cupom de desconto
                         </a>
 
-                        <form sec:authorize="isAuthenticated()" th:action="@{/registrations/{id}(id=${event.id})}" method="post">
+                        <form sec:authorize="isAuthenticated()" th:action="@{/registrations/{id}(id=${event.id})}"
+                            method="post">
                             <!-- Campos ocultos para os ingressos selecionados seriam adicionados aqui via JS se necessário -->
                             <button type="submit" id="checkoutBtn" class="btn-checkout" disabled>
                                 Selecione um Ingresso
@@ -133,19 +153,15 @@
                         </a>
 
                         <div style="margin-top: 16px;">
-                            <a href="#" style="font-size: 12px; color: #6b7280; text-decoration: underline; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <a href="#"
+                                style="font-size: 12px; color: #6b7280; text-decoration: underline; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                 <i data-lucide="info" style="width: 14px; height: 14px;"></i> Entenda nossa taxa
                             </a>
                         </div>
                     </div>
                 </div>
-                
-                <div class="price-card" style="margin-top: 16px; padding: 16px;">
-                     <div class="status-row" style="margin-bottom: 0;">
-                        <span class="status-label">Status do Evento:</span>
-                        <span class="status-pill" th:text="${event.eventStatus}"></span>
-                    </div>
-                </div>
+
+
             </aside>
         </main>
     </div>
@@ -160,20 +176,20 @@
         function updateQty(btn, delta) {
             const ticketId = btn.getAttribute('data-id');
             if (!selections[ticketId]) selections[ticketId] = 0;
-            
+
             const newVal = selections[ticketId] + delta;
-            
+
             if (newVal >= 0 && newVal <= 5) {
                 selections[ticketId] = newVal;
-                
+
                 const qtyDisplay = document.getElementById(`qty-${ticketId}`);
                 qtyDisplay.textContent = newVal;
-                
+
                 // Update buttons state
                 const row = qtyDisplay.parentElement;
                 row.querySelector('.minus').disabled = (newVal === 0);
                 row.querySelector('.plus').disabled = (newVal === 5);
-                
+
                 updateCheckoutButton();
             }
         }
@@ -182,7 +198,7 @@
             if (!checkoutBtn) return;
 
             const totalSelected = Object.values(selections).reduce((a, b) => a + b, 0);
-            
+
             if (totalSelected > 0) {
                 checkoutBtn.disabled = false;
                 checkoutBtn.textContent = 'Comprar Ingresso';

@@ -73,7 +73,7 @@
 
                     <div class="form-group full">
                         <label for="description">Descrição</label>
-                        <textarea id="description" th:field="*{description}" rows="5"
+                        <textarea id="description" th:field="*{description}" rows="5" maxlength="1000"
                             placeholder="Conte mais sobre o que vai acontecer..."></textarea>
                         <span class="field-error" th:if="${#fields.hasErrors('description')}"
                             th:errors="*{description}"></span>
@@ -202,22 +202,22 @@
         function addTicket(ticketData = null) {
             const index = ticketCount++;
             const ticketHtml = `
-                <div class="ticket-item" id="ticket-${index}" style="padding: 16px; border: 1px solid var(--border); border-radius: 14px; margin-bottom: 16px; background: white;">
+                <div class="ticket-item" id="ticket-${index}">
                     <div class="ticket-header">
                         <div class="ticket-title">
-                            <i data-lucide="ticket" style="width: 16px; height: 16px;"></i>
+                            <i data-lucide="ticket"></i>
                             Lote #<span class="ticket-index-display">${index + 1}</span>
                         </div>
                         <button type="button" class="remove-ticket-btn" onclick="removeTicket(${index})" title="Remover lote">
-                            <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                            <i data-lucide="trash-2"></i>
                         </button>
                     </div>
                     <div class="form-row">
-                        <div class="form-group" style="flex: 1;">
+                        <div class="form-group">
                             <label>Nome do Lote</label>
                             <input type="text" name="eventTicket[${index}].name" value="${ticketData?.name || ''}" placeholder="Ex: Primeiro Lote, VIP..." required oninput="saveFormDraft()">
                         </div>
-                        <div class="form-group" style="flex: 1;">
+                        <div class="form-group">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <label style="margin-bottom: 0;">Valor</label>
                                 <div style="display: flex; align-items: center; gap: 8px;">
