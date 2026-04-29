@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -42,57 +43,57 @@ public class EventService {
     private final EventTicketRepository eventTicketRepository;
 
     public List<Event> findFiltered(String category, String query, String date, String price, String city) {
-        String categoryParam = (category != null && !category.trim().isEmpty()) ? category : null;
-        String queryParam = (query != null && !query.trim().isEmpty()) ? query : null;
-        
-        List<Event> events = eventRepository.findFilteredEvents(EventStatus.ATIVO, categoryParam, queryParam);
+        // Busca inicial filtrada por BD (Categoria e Busca textual)
+        List<Event> events = eventRepository.findFilteredEvents(
+                EventStatus.ATIVO,
+                StringUtils.hasText(category) ? category : null,
+                StringUtils.hasText(query) ? query : null
+        );
 
-        // Filter by City
-        if (city != null && !city.trim().isEmpty()) {
-            events = events.stream()
-                    .filter(e -> e.getEventLocalization() != null && 
-                            e.getEventLocalization().getCity() != null &&
-                            e.getEventLocalization().getCity().equalsIgnoreCase(city.trim()))
-                    .toList();
-        }
-        
-        // Filter by Date
-        if (date != null && !date.isEmpty()) {
-            LocalDateTime now = LocalDateTime.now();
-            events = events.stream().filter(e -> {
-                LocalDate eventLocalDate = e.getEventDate().toLocalDate();
-                if (date.equals("hoje")) {
-                    return eventLocalDate.isEqual(now.toLocalDate());
-                } else if (date.equals("amanha")) {
-                    return eventLocalDate.isEqual(now.plusDays(1).toLocalDate());
-                } else if (date.equals("fim-de-semana")) {
-                    LocalDate saturday = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY)).toLocalDate();
-                    LocalDate sunday = saturday.plusDays(1);
-                    return eventLocalDate.isEqual(saturday) || eventLocalDate.isEqual(sunday);
-                } else {
-                    try {
-                        // Tenta parsear como data específica (YYYY-MM-DD do input date)
-                        return eventLocalDate.isEqual(LocalDate.parse(date));
-                    } catch (Exception ex) {
-                        return true;
-                    }
+        return events.stream()
+                .filter(e -> filterByCity(e, city))
+                .filter(e -> filterByDate(e, date))
+                .filter(e -> filterByPrice(e, price))
+                .toList();
+    }
+
+    private boolean filterByCity(Event e, String city) {
+        if (!StringUtils.hasText(city)) return true;
+        var loc = e.getEventLocalization();
+        return loc != null && city.trim().equalsIgnoreCase(loc.getCity());
+    }
+
+    private boolean filterByDate(Event e, String date) {
+        if (!StringUtils.hasText(date)) return true;
+
+        LocalDate eventDate = e.getEventDate().toLocalDate();
+        LocalDate today = LocalDate.now();
+
+        return switch (date.toLowerCase()) {
+            case "hoje" -> eventDate.isEqual(today);
+            case "amanha" -> eventDate.isEqual(today.plusDays(1));
+            case "fim-de-semana" -> {
+                LocalDate sat = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
+                LocalDate sun = sat.plusDays(1);
+                yield eventDate.isEqual(sat) || eventDate.isEqual(sun);
+            }
+            default -> {
+                try {
+                    yield eventDate.isEqual(LocalDate.parse(date));
+                } catch (Exception ex) {
+                    yield true;
                 }
-            }).toList();
-        }
-        
-        // Filter by Price
-        if (price != null && !price.isEmpty()) {
-            events = events.stream().filter(e -> {
-                boolean hasFree = e.getTickets().stream().anyMatch(t -> t.getValue() == 0);
-                boolean hasPaid = e.getTickets().stream().anyMatch(t -> t.getValue() > 0);
-                
-                if (price.equals("gratis")) return hasFree;
-                if (price.equals("pago")) return hasPaid;
-                return true;
-            }).toList();
-        }
-        
-        return events;
+            }
+        };
+    }
+
+    private boolean filterByPrice(Event e, String price) {
+        if (!StringUtils.hasText(price)) return true;
+
+        boolean isFree = e.getTickets().stream().anyMatch(t -> t.getValue() == 0);
+        boolean isPaid = e.getTickets().stream().anyMatch(t -> t.getValue() > 0);
+
+        return (price.equals("gratis") && isFree) || (price.equals("pago") && isPaid);
     }
 
     public List<Event> findAllByOrganizer(UUID organizerId) {
