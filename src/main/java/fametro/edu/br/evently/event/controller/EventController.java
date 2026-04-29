@@ -32,8 +32,11 @@ public class EventController {
     @GetMapping
     public String list(@RequestParam(required = false) String category, 
                        @RequestParam(required = false) String query, 
+                       @RequestParam(required = false) String date,
+                       @RequestParam(required = false) String price,
+                       @RequestParam(required = false) String city,
                        Model model) {
-        List<Event> lista = eventService.findFiltered(category, query);
+        List<Event> lista = eventService.findFiltered(category, query, date, price, city);
         model.addAttribute("events", lista);
         model.addAttribute("categories", categoryService.findAll());
         return "events/home";

@@ -24,6 +24,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,10 +41,58 @@ public class EventService {
     private final UserRepository userRepository;
     private final EventTicketRepository eventTicketRepository;
 
-    public List<Event> findFiltered(String category, String query) {
+    public List<Event> findFiltered(String category, String query, String date, String price, String city) {
         String categoryParam = (category != null && !category.trim().isEmpty()) ? category : null;
         String queryParam = (query != null && !query.trim().isEmpty()) ? query : null;
-        return eventRepository.findFilteredEvents(EventStatus.ATIVO, categoryParam, queryParam);
+        
+        List<Event> events = eventRepository.findFilteredEvents(EventStatus.ATIVO, categoryParam, queryParam);
+
+        // Filter by City
+        if (city != null && !city.trim().isEmpty()) {
+            events = events.stream()
+                    .filter(e -> e.getEventLocalization() != null && 
+                            e.getEventLocalization().getCity() != null &&
+                            e.getEventLocalization().getCity().equalsIgnoreCase(city.trim()))
+                    .toList();
+        }
+        
+        // Filter by Date
+        if (date != null && !date.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            events = events.stream().filter(e -> {
+                LocalDate eventLocalDate = e.getEventDate().toLocalDate();
+                if (date.equals("hoje")) {
+                    return eventLocalDate.isEqual(now.toLocalDate());
+                } else if (date.equals("amanha")) {
+                    return eventLocalDate.isEqual(now.plusDays(1).toLocalDate());
+                } else if (date.equals("fim-de-semana")) {
+                    LocalDate saturday = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY)).toLocalDate();
+                    LocalDate sunday = saturday.plusDays(1);
+                    return eventLocalDate.isEqual(saturday) || eventLocalDate.isEqual(sunday);
+                } else {
+                    try {
+                        // Tenta parsear como data específica (YYYY-MM-DD do input date)
+                        return eventLocalDate.isEqual(LocalDate.parse(date));
+                    } catch (Exception ex) {
+                        return true;
+                    }
+                }
+            }).toList();
+        }
+        
+        // Filter by Price
+        if (price != null && !price.isEmpty()) {
+            events = events.stream().filter(e -> {
+                boolean hasFree = e.getTickets().stream().anyMatch(t -> t.getValue() == 0);
+                boolean hasPaid = e.getTickets().stream().anyMatch(t -> t.getValue() > 0);
+                
+                if (price.equals("gratis")) return hasFree;
+                if (price.equals("pago")) return hasPaid;
+                return true;
+            }).toList();
+        }
+        
+        return events;
     }
 
     public List<Event> findAllByOrganizer(UUID organizerId) {

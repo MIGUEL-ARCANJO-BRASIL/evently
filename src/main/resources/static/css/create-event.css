@@ -202,6 +202,20 @@ body {
     margin-top: 18px;
 }
 
+.ticket-item {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s ease;
+}
+
+.ticket-item:hover {
+    border-color: #d1ccf8;
+}
+
 .ticket-item .form-row {
     align-items: flex-end;
 }

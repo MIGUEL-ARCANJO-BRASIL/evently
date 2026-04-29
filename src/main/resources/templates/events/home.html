@@ -16,46 +16,140 @@
         <div th:replace="~{fragments/navbar :: navbar('events')}"></div>
 
         <main class="events-content">
-            <section class="hero-row">
-                <div>
-                    <h1 class="events-title">Próximos Eventos</h1>
 
-                    <div class="filter-container" style="position: relative; display: inline-block;">
-                        <button id="filterToggle" class="pill"
-                            style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: white; border: 1px solid #e5e7eb; color: #374151; font-weight: 500;">
-                            <i data-lucide="filter" style="width: 16px; height: 16px;"></i>
-                            <span
-                                th:text="${param.category != null ? param.category[0] : 'Todas as Categorias'}">Categorias</span>
-                            <i data-lucide="chevron-down" style="width: 16px; height: 16px; margin-left: 4px;"></i>
-                        </button>
+            <div class="filters-row">
+                <div class="search-input-wrapper">
+                    <form action="/events" method="get" class="search-box" id="mainSearchForm">
+                        <input type="hidden" name="category" th:if="${param.category != null}"
+                            th:value="${param.category}">
+                        <input type="hidden" name="date" th:if="${param.date != null}" th:value="${param.date}">
+                        <input type="hidden" name="price" th:if="${param.price != null}" th:value="${param.price}">
+                        <input type="hidden" name="city" th:if="${param.city != null}" th:value="${param.city}">
+                        <input type="text" name="query" placeholder="O que você está buscando?"
+                            th:value="${param.query}">
+                    </form>
+                </div>
 
-                        <div id="filterMenu"
-                            style="display: none; position: absolute; top: 100%; left: 0; margin-top: 8px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 50; min-width: 220px; max-height: 300px; overflow-y: auto; padding: 8px;">
-                            <a th:href="@{/events(query=${param.query})}" class="filter-link"
-                                style="display: block; padding: 10px 16px; color: #374151; text-decoration: none; border-radius: 8px; font-size: 14px; transition: background 0.2s;"
-                                onmouseover="this.style.background='#f3f4f6'"
-                                onmouseout="this.style.background='transparent'"
-                                th:styleappend="${param.category == null} ? 'font-weight: 600; background: #f3f4f6;' : ''">
-                                Todos os Eventos
-                            </a>
-                            <a th:each="cat : ${categories}"
-                                th:href="@{/events(category=${cat.name}, query=${param.query})}" class="filter-link"
-                                style="display: block; padding: 10px 16px; color: #374151; text-decoration: none; border-radius: 8px; font-size: 14px; transition: background 0.2s; margin-top: 4px;"
-                                onmouseover="this.style.background='#f3f4f6'"
-                                onmouseout="this.style.background='transparent'"
-                                th:styleappend="${param.category != null and param.category[0] == cat.name} ? 'font-weight: 600; background: #f3f4f6;' : ''"
-                                th:text="${cat.name}">
-                            </a>
+                <!-- Filtro Onde (Cidade) -->
+                <div class="filter-group">
+                    <button type="button" class="filter-dropdown-btn" id="cityFilterBtn"
+                        th:classappend="${param.city != null} ? 'active' : ''">
+                        <i data-lucide="map-pin"></i>
+                        <span th:text="${param.city != null ? param.city[0] : 'Onde'}">Onde</span>
+                        <i data-lucide="chevron-down" class="chevron-icon"></i>
+                    </button>
+
+                    <div class="filter-dropdown-menu" id="cityDropdownMenu">
+                        <div class="dropdown-search-wrapper">
+                            <i data-lucide="search"></i>
+                            <input type="text" id="citySearchInput" placeholder="Buscar outra cidade...">
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-section">
+                            <span class="dropdown-label">Principais Capitais</span>
+                            <div class="dropdown-options" id="cityOptions">
+                                <a th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date}, price=${param.price})}"
+                                    class="dropdown-option city-option"
+                                    th:classappend="${param.city == null} ? 'active' : ''" data-city="">Qualquer
+                                    lugar</a>
+                                <a th:each="cap : ${ {'Belo Horizonte', 'Brasília', 'Curitiba', 'Fortaleza', 'Manaus', 'Porto Alegre', 'Recife', 'Rio de Janeiro', 'Salvador', 'São Paulo'} }"
+                                    th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date}, price=${param.price}, city=${cap})}"
+                                    class="dropdown-option city-option"
+                                    th:classappend="${param.city != null and param.city[0] == cap} ? 'active' : ''"
+                                    th:text="${cap}" th:data-city="${cap}"></a>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <form action="/events" method="get" class="search-box">
-                    <input type="hidden" name="category" th:if="${param.category != null}" th:value="${param.category}">
-                    <input type="text" name="query" placeholder="Buscar eventos..." th:value="${param.query}">
-                </form>
-            </section>
+                <!-- Filtro Quando -->
+                <div class="filter-group">
+                    <button type="button" class="filter-dropdown-btn" id="dateFilterBtn"
+                        th:classappend="${param.date != null} ? 'active' : ''">
+                        <i data-lucide="calendar"></i>
+                        <span
+                            th:text="${param.date != null ? (param.date[0] == 'hoje' ? 'Hoje' : (param.date[0] == 'amanha' ? 'Amanhã' : (param.date[0] == 'fim-de-semana' ? 'Fim de Semana' : param.date[0]))) : 'Quando'}">Quando</span>
+                        <i data-lucide="chevron-down" class="chevron-icon"></i>
+                    </button>
 
+                    <div class="filter-dropdown-menu" id="dateDropdownMenu">
+                        <div class="dropdown-section">
+                            <span class="dropdown-label">Sugestões</span>
+                            <div class="dropdown-options">
+                                <a th:href="@{/events(category=${param.category}, query=${param.query}, price=${param.price})}"
+                                    class="dropdown-option"
+                                    th:classappend="${param.date == null} ? 'active' : ''">Qualquer data</a>
+                                <a th:href="@{/events(category=${param.category}, query=${param.query}, date='hoje', price=${param.price})}"
+                                    class="dropdown-option"
+                                    th:classappend="${param.date != null and param.date[0] == 'hoje'} ? 'active' : ''">Hoje</a>
+                                <a th:href="@{/events(category=${param.category}, query=${param.query}, date='amanha', price=${param.price})}"
+                                    class="dropdown-option"
+                                    th:classappend="${param.date != null and param.date[0] == 'amanha'} ? 'active' : ''">Amanhã</a>
+                                <a th:href="@{/events(category=${param.category}, query=${param.query}, date='fim-de-semana', price=${param.price})}"
+                                    class="dropdown-option"
+                                    th:classappend="${param.date != null and param.date[0] == 'fim-de-semana'} ? 'active' : ''">Fim
+                                    de Semana</a>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-section">
+                            <span class="dropdown-label">Escolher data</span>
+                            <input type="date" id="customDatePicker" class="custom-date-input"
+                                th:value="${param.date != null and param.date[0].contains('-') ? param.date[0] : ''}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtro Preço -->
+                <div class="filter-group">
+                    <button type="button" class="filter-dropdown-btn" id="priceFilterBtn"
+                        th:classappend="${param.price != null} ? 'active' : ''">
+                        <i data-lucide="banknote"></i>
+                        <span
+                            th:text="${param.price != null ? (param.price[0] == 'gratis' ? 'Grátis' : 'Pago') : 'Preço'}">Preço</span>
+                        <i data-lucide="chevron-down" class="chevron-icon"></i>
+                    </button>
+
+                    <div class="filter-dropdown-menu" id="priceDropdownMenu">
+                        <div class="dropdown-options">
+                            <a th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date})}"
+                                class="dropdown-option" th:classappend="${param.price == null} ? 'active' : ''">Qualquer
+                                preço</a>
+                            <a th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date}, price='gratis')}"
+                                class="dropdown-option"
+                                th:classappend="${param.price != null and param.price[0] == 'gratis'} ? 'active' : ''">Grátis</a>
+                            <a th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date}, price='pago')}"
+                                class="dropdown-option"
+                                th:classappend="${param.price != null and param.price[0] == 'pago'} ? 'active' : ''">Pago</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <section class="collections-section">
+                <div class="section-header">
+                    <h2 class="section-title">Explore nossas coleções</h2>
+                    <a th:href="@{/events}" class="view-all">Ver tudo</a>
+                </div>
+
+                <div class="slider-container">
+                    <div class="category-slider" id="categorySlider">
+                        <a th:href="@{/events(query=${param.query}, date=${param.date}, price=${param.price})}"
+                            class="category-card" th:classappend="${param.category == null} ? 'active' : ''">
+                            <i data-lucide="layout-grid"></i>
+                            <span>Tudo</span>
+                        </a>
+
+                        <a th:each="cat : ${categories}"
+                            th:href="@{/events(category=${cat.name}, query=${param.query}, date=${param.date}, price=${param.price})}"
+                            class="category-card"
+                            th:classappend="${param.category != null and param.category[0] == cat.name} ? 'active' : ''"
+                            th:data-category-name="${cat.name}">
+                            <i data-lucide="tag"></i>
+                            <span th:text="${cat.name}"></span>
+                        </a>
+                    </div>
+                </div>
+            </section>
             <div th:if="${sucesso}" class="alert alert-sucesso">
                 <span th:text="${sucesso}"></span>
             </div>
@@ -99,8 +193,8 @@
 
                             <li class="meta-item">
                                 <i data-lucide="map-pin" class="meta-icon"></i>
-                                <span th:if="${event.eventLocalization != null}" 
-                                      th:text="${event.eventLocalization.city} + ', ' + ${event.eventLocalization.state}"></span>
+                                <span th:if="${event.eventLocalization != null}"
+                                    th:text="${event.eventLocalization.city} + ', ' + ${event.eventLocalization.state}"></span>
                             </li>
 
                             <li class="meta-item">
@@ -133,21 +227,105 @@
         const searchInput = document.querySelector('input[name="query"]');
         const eventCards = document.querySelectorAll('.event-card');
         const liveEmptyState = document.getElementById('live-empty-state');
-        const searchForm = document.querySelector('.search-box');
+        const searchForm = document.getElementById('mainSearchForm');
 
-        // Lógica do menu dropdown de categorias
-        const filterToggle = document.getElementById('filterToggle');
-        const filterMenu = document.getElementById('filterMenu');
+        // Mapping de ícones por nome de categoria
+        const iconMap = {
+            'Shows e Festas': 'music',
+            'Festa': 'music',
+            'Shows': 'mic-2',
+            'Teatros e Espetáculos': 'theater',
+            'Teatro': 'masks-theater',
+            'Stand Up Comedy': 'mic',
+            'Esportes': 'trophy',
+            'Passeios e Tours': 'map',
+            'Cursos e Workshops': 'book-open',
+            'Congressos e Palestras': 'presentation',
+            'Infantil': 'baby',
+            'Dia das mães': 'heart',
+            'Gastronomia': 'utensils',
+            'Tecnologia': 'cpu',
+            'Games': 'gamepad-2',
+            'Educação': 'graduation-cap',
+            'Saúde': 'heart-pulse',
+            'Negócios': 'briefcase'
+        };
 
-        if (filterToggle && filterMenu) {
-            filterToggle.addEventListener('click', (e) => {
+        // Aplicar ícones dinamicamente
+        document.querySelectorAll('.category-card[data-category-name]').forEach(card => {
+            const name = card.getAttribute('data-category-name');
+            const iconName = iconMap[name] || 'tag';
+            const iconElement = card.querySelector('i');
+            if (iconElement) {
+                iconElement.setAttribute('data-lucide', iconName);
+            }
+        });
+
+        // Re-inicializar ícones após a troca dos atributos
+        lucide.createIcons();
+
+        // Lógica dos dropdowns de filtro
+        const setupDropdown = (btnId, menuId) => {
+            const btn = document.getElementById(btnId);
+            const menu = document.getElementById(menuId);
+
+            if (!btn || !menu) return;
+
+            btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                filterMenu.style.display = filterMenu.style.display === 'none' ? 'block' : 'none';
+                // Fechar outros menus
+                document.querySelectorAll('.filter-dropdown-menu').forEach(m => {
+                    if (m !== menu) m.classList.remove('show');
+                });
+                document.querySelectorAll('.filter-dropdown-btn').forEach(b => {
+                    if (b !== btn) b.classList.remove('open');
+                });
+
+                menu.classList.toggle('show');
+                btn.classList.toggle('open');
+            });
+        };
+
+        setupDropdown('dateFilterBtn', 'dateDropdownMenu');
+        setupDropdown('priceFilterBtn', 'priceDropdownMenu');
+        setupDropdown('cityFilterBtn', 'cityDropdownMenu');
+
+        // Fechar ao clicar fora
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.classList.remove('show'));
+            document.querySelectorAll('.filter-dropdown-btn').forEach(b => b.classList.remove('open'));
+        });
+
+        // Lógica de busca de cidades no dropdown
+        const citySearchInput = document.getElementById('citySearchInput');
+        const cityOptions = document.querySelectorAll('.city-option');
+
+        if (citySearchInput) {
+            citySearchInput.addEventListener('input', function () {
+                const term = this.value.toLowerCase().trim();
+                cityOptions.forEach(opt => {
+                    const cityName = opt.getAttribute('data-city').toLowerCase();
+                    if (cityName === '' || cityName.includes(term)) {
+                        opt.style.display = '';
+                    } else {
+                        opt.style.display = 'none';
+                    }
+                });
             });
 
-            document.addEventListener('click', (e) => {
-                if (!filterMenu.contains(e.target)) {
-                    filterMenu.style.display = 'none';
+            // Evitar fechar o menu ao clicar no input de busca
+            citySearchInput.addEventListener('click', (e) => e.stopPropagation());
+        }
+
+        // Lógica do Calendário (Custom Date Picker)
+        const customDatePicker = document.getElementById('customDatePicker');
+        if (customDatePicker) {
+            customDatePicker.addEventListener('change', function () {
+                const selectedDate = this.value;
+                if (selectedDate) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('date', selectedDate);
+                    window.location.href = url.pathname + url.search;
                 }
             });
         }
@@ -170,39 +348,41 @@
                 }
             });
 
-            // Mostrar mensagem caso nada seja encontrado no frontend
             if (visibleCount === 0 && eventCards.length > 0) {
                 liveEmptyState.style.display = 'block';
             } else {
                 liveEmptyState.style.display = 'none';
             }
 
-            // Atualizar os links das categorias para manter a pesquisa
-            const pills = document.querySelectorAll('.filter-link');
-            pills.forEach(pill => {
-                const url = new URL(pill.href);
+            // Atualizar todos os links de filtros e opções de dropdown para manter o termo de busca
+            document.querySelectorAll('.category-card, .dropdown-option, .view-all').forEach(link => {
+                const url = new URL(link.href, window.location.origin);
                 if (searchTerm) {
-                    url.searchParams.set('query', searchInput.value);
+                    url.searchParams.set('query', this.value);
                 } else {
                     url.searchParams.delete('query');
                 }
-                pill.href = url.toString();
+                link.href = url.pathname + url.search;
             });
 
-            // Atualizar a URL atual silenciosamente para poder compartilhar o link
+            // Atualizar URL silenciosamente
             const currentUrl = new URL(window.location);
-            if (searchInput.value) {
-                currentUrl.searchParams.set('query', searchInput.value);
+            if (this.value) {
+                currentUrl.searchParams.set('query', this.value);
             } else {
                 currentUrl.searchParams.delete('query');
             }
             window.history.replaceState({}, '', currentUrl);
         });
 
-        // Impede o recarregamento da página ao dar Enter (já que a busca é ao vivo)
         if (searchForm) {
             searchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
+                // Permitir o submit normal para filtros de backend funcionarem
+                // mas se estiver vazio limpa o parâmetro
+                if (!searchInput.value.trim()) {
+                    searchInput.disabled = true;
+                    searchForm.submit();
+                }
             });
         }
     });
