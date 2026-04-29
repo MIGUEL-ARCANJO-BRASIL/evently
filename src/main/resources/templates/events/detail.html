@@ -107,7 +107,7 @@
                                     <span class="ticket-price-main"
                                         th:text="${ticket.value == 0 ? 'Grátis' : 'R$ ' + #numbers.formatDecimal(ticket.value, 1, 'POINT', 2, 'COMMA')}"></span>
                                     <span class="ticket-tax" th:if="${ticket.value > 0}"
-                                        th:text="'(+' + #numbers.formatDecimal(ticket.value * 0.1, 1, 'POINT', 2, 'COMMA') + ' taxa)'"></span>
+                                        th:text="${'(+' + #numbers.formatDecimal(ticket.value * 0.1, 1, 'POINT', 2, 'COMMA') + ' taxa)'}"></span>
                                 </div>
                                 <div class="ticket-installment" th:if="${ticket.value > 100}">em até 12x</div>
                                 <div class="ticket-installment" th:if="${ticket.value <= 100 and ticket.value > 0}">em
