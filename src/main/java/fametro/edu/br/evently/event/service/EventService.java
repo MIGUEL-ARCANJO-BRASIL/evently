@@ -27,7 +27,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.UUID;
@@ -39,7 +38,6 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
     private final EventTicketRepository eventTicketRepository;
 
     public List<Event> findFiltered(String category, String query, String date, String price, String city) {

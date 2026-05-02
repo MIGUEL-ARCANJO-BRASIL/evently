@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6" lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Checkout - ' + ${event.title}"></title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/checkout.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="checkout-body">
+<div th:replace="~{fragments/navbar :: navbar('events')}"></div>
+
+<main class="checkout-page">
+    <div class="checkout-header">
+        <p class="checkout-kicker">Checkout</p>
+        <h1 class="checkout-title" th:text="${event.title}"></h1>
+    </div>
+
+    <form th:action="@{/events/subscription/join-event}" th:object="${subscriptionForm}" method="post"
+          class="checkout-form"
+          id="checkoutForm"
+          th:data-total-amount="${totalAmount}"
+          th:data-event-title="${event.title}">
+        <input type="hidden" th:field="*{eventId}">
+        <input type="hidden" th:field="*{selectedTickets}">
+
+        <div class="checkout-grid">
+            <div class="checkout-left-stack">
+                <section class="checkout-card">
+                    <h2 class="checkout-card-title">Resumo dos ingressos</h2>
+
+                    <div th:each="item : ${checkoutItems}" class="ticket-row">
+                        <div class="ticket-info">
+                            <strong th:text="${item.ticketName}"></strong>
+                            <div class="ticket-qty" th:text="${item.quantity} + 'x'"></div>
+                        </div>
+                        <div class="ticket-price"
+                             th:text="${item.unitPrice == 0 ? 'Grátis' : 'R$ ' + #numbers.formatDecimal(item.unitPrice * item.quantity, 1, 'POINT', 2, 'COMMA')}"></div>
+                    </div>
+
+                    <hr class="checkout-divider">
+                    <div class="checkout-total-row">
+                        <span>Total</span>
+                        <span th:text="${totalAmount == 0 ? 'Gratuito' : 'R$ ' + #numbers.formatDecimal(totalAmount, 1, 'POINT', 2, 'COMMA')}"></span>
+                    </div>
+                </section>
+
+                <section class="checkout-card checkout-payment-card">
+                    <h2 class="checkout-card-title">Pagamento</h2>
+                    <p class="checkout-payment-lead">Escolha uma forma de pagamento. O painel abaixo muda conforme a opção.</p>
+
+                    <div class="payment-methods-grid" role="radiogroup" aria-label="Forma de pagamento">
+                        <label class="payment-method-card">
+                            <input type="radio" th:field="*{paymentMethod}" value="CARTAO_CREDITO" class="payment-method-input" required>
+                            <span class="payment-method-card-inner">
+                                    <i data-lucide="credit-card" class="payment-method-icon"></i>
+                                    <span class="payment-method-name">Crédito</span>
+                                    <span class="payment-method-desc">Cartão de crédito</span>
+                                </span>
+                        </label>
+                        <label class="payment-method-card">
+                            <input type="radio" th:field="*{paymentMethod}" value="CARTAO_DEBITO" class="payment-method-input">
+                            <span class="payment-method-card-inner">
+                                    <i data-lucide="landmark" class="payment-method-icon"></i>
+                                    <span class="payment-method-name">Débito</span>
+                                    <span class="payment-method-desc">Cartão de débito</span>
+                                </span>
+                        </label>
+                        <label class="payment-method-card">
+                            <input type="radio" th:field="*{paymentMethod}" value="PIX" class="payment-method-input">
+                            <span class="payment-method-card-inner">
+                                    <i data-lucide="qr-code" class="payment-method-icon"></i>
+                                    <span class="payment-method-name">PIX</span>
+                                    <span class="payment-method-desc">Instantâneo</span>
+                                </span>
+                        </label>
+                        <label class="payment-method-card">
+                            <input type="radio" th:field="*{paymentMethod}" value="BOLETO" class="payment-method-input">
+                            <span class="payment-method-card-inner">
+                                    <i data-lucide="file-text" class="payment-method-icon"></i>
+                                    <span class="payment-method-name">Boleto</span>
+                                    <span class="payment-method-desc">Pagamento em banco</span>
+                                </span>
+                        </label>
+                    </div>
+
+                    <div class="payment-detail payment-detail--hidden" data-payment-panel="CARTAO_CREDITO,CARTAO_DEBITO">
+                        <div class="payment-detail-header">
+                            <i data-lucide="credit-card"></i>
+                            <div>
+                                <strong class="payment-detail-title">Dados do cartão</strong>
+                                <span class="payment-detail-caption" id="paymentCardCaption">Crédito ou débito</span>
+                            </div>
+                        </div>
+                        <div class="payment-card-grid">
+                            <input type="text" inputmode="numeric" autocomplete="cc-number" maxlength="19" class="payment-card-full" placeholder="Número do cartão" id="cardNumber">
+                            <input type="text" autocomplete="cc-name" class="payment-card-full" placeholder="Nome impresso no cartão" id="cardName">
+                            <input type="text" inputmode="numeric" autocomplete="cc-exp" maxlength="5" placeholder="MM/AA" id="cardExpiry">
+                            <input type="text" inputmode="numeric" autocomplete="cc-csc" maxlength="4" placeholder="CVV" id="cardCvv">
+                        </div>
+                        <p class="payment-detail-note">Demonstração acadêmica — não há cobrança real.</p>
+                    </div>
+
+                    <div class="payment-detail payment-detail--hidden" data-payment-panel="PIX">
+                        <div class="payment-detail-header">
+                            <i data-lucide="qr-code"></i>
+                            <div>
+                                <strong class="payment-detail-title">PIX</strong>
+                                <span class="payment-detail-caption">Copie a chave ou escaneie o QR Code</span>
+                            </div>
+                        </div>
+                        <div class="pix-block">
+                            <div class="pix-key-row">
+                                <code class="pix-key" id="pixCopyKey">evently.pagamentos.pix@fametro.demo</code>
+                                <button type="button" class="pix-copy-btn" id="pixCopyBtn">Copiar</button>
+                            </div>
+                            <div class="pix-qr-wrap">
+                                <img class="pix-qr-img" id="pixQrImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%23f3f4f6' width='200' height='200'/%3E%3C/svg%3E" alt="QR Code PIX" width="200" height="200">
+                            </div>
+                        </div>
+                        <p class="payment-detail-note">Valor de referência igual ao total do checkout (simulação).</p>
+                    </div>
+
+                    <div class="payment-detail payment-detail--hidden" data-payment-panel="BOLETO">
+                        <div class="payment-detail-header">
+                            <i data-lucide="file-text"></i>
+                            <div>
+                                <strong class="payment-detail-title">Boleto bancário</strong>
+                                <span class="payment-detail-caption">Gere o boleto para pagamento em até 3 dias úteis</span>
+                            </div>
+                        </div>
+                        <p class="boleto-hint">Clique para simular a geração do boleto (linha digitável de exemplo).</p>
+                        <button type="button" class="btn-boleto-demo" id="boletoGenerateBtn">Gerar boleto</button>
+                        <div class="boleto-result payment-detail--hidden" id="boletoResult">
+                            <span class="boleto-label">Linha digitável</span>
+                            <code class="boleto-line" id="boletoLine">34191.79001 01043.510047 91020.150008 1 84470026000</code>
+                            <a href="#" class="boleto-fake-pdf" id="boletoPdfLink">Baixar PDF (simulado)</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="checkout-column">
+                <section class="checkout-card checkout-data-card">
+                    <h2 class="checkout-card-title">Dados da inscrição</h2>
+
+                    <div th:if="${erroInscricao}" class="checkout-alert checkout-alert-erro">
+                        <span th:text="${erroInscricao}"></span>
+                    </div>
+                    <div th:if="${sucessoInscricao}" class="checkout-alert checkout-alert-sucesso">
+                        <span th:text="${sucessoInscricao}"></span>
+                    </div>
+
+                    <div sec:authorize="isAnonymous()" class="login-hint">
+                        Já tem conta?
+                        <a th:href="@{/auth/login}">Fazer login</a>
+                    </div>
+
+                    <input type="text" th:field="*{userName}" placeholder="Nome" id="userName">
+                    <input type="text" th:field="*{userSecondName}" placeholder="Sobrenome" id="userSecondName">
+                    <input type="email" th:field="*{userEmail}" placeholder="E-mail" id="userEmail">
+                    <input type="text" th:field="*{userCpf}" placeholder="CPF" id="userCpf">
+                    <input type="text" th:field="*{userPhone}" placeholder="Telefone" id="userPhone">
+                    <input type="text" th:field="*{userSecondPhone}" placeholder="Telefone de emergência" id="userSecondPhone">
+                    <input type="text" th:field="*{userCity}" placeholder="Cidade, Estado" id="userCity">
+
+                    <label class="checkout-field-label" for="userAgeRange">Faixa etária</label>
+                    <select placeholder="Selecione uma faixa etária" th:field="*{userAgeRange}" id="userAgeRange" required>
+                        <option value=""
+                                th:if="*{userAgeRange == null}"
+                                disabled
+                                hidden
+                                selected>&#8203;</option>
+                        <option th:each="age : ${ageRanges}"
+                                th:value="${age}"
+                                th:text="${T(fametro.edu.br.evently.event.enums.AgeRange).convertAgeRangeToString(age)}"></option>
+                    </select>
+
+                    <button type="submit" class="checkout-submit-btn">
+                        Finalizar inscrição
+                    </button>
+                </section>
+            </div>
+        </div>
+    </form>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    lucide.createIcons();
+
+    const CHECKOUT_STORAGE_KEY = 'checkoutFormData';
+    const CHECKOUT_RELOAD_FLAG = 'checkoutReloadInProgress';
+    let isFormSubmitting = false;
+
+    function isReloadNavigation() {
+        const navEntries = performance.getEntriesByType && performance.getEntriesByType('navigation');
+        if (navEntries && navEntries.length > 0) {
+            return navEntries[0].type === 'reload';
+        }
+
+        if (performance.navigation) {
+            return performance.navigation.type === 1;
+        }
+
+        return false;
+    }
+
+    function maskCPF(value) {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+            .replace(/(-\d{2})\d+?$/, '$1');
+    }
+
+    function maskPhone(value) {
+        return value
+            .replace(/\D/g, '')
+            .replace(/(\d{0,2})/, '($1')
+            .replace(/(\(\d{2})(\d)/, '$1) $2')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .replace(/(-\d{4})\d+?$/, '$1');
+    }
+
+    function maskCardNumber(v) {
+        const d = v.replace(/\D/g, '').slice(0, 16);
+        return d.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+    }
+
+    function maskExpiry(v) {
+        const d = v.replace(/\D/g, '').slice(0, 4);
+        if (d.length <= 2) return d;
+        return d.slice(0, 2) + '/' + d.slice(2);
+    }
+
+    function applyMasks() {
+        const cpfField = document.getElementById('userCpf');
+        const phoneField = document.getElementById('userPhone');
+        const secondPhoneField = document.getElementById('userSecondPhone');
+        const cardNumber = document.getElementById('cardNumber');
+        const cardExpiry = document.getElementById('cardExpiry');
+        const cardCvv = document.getElementById('cardCvv');
+
+        if (cpfField) {
+            cpfField.addEventListener('input', function() {
+                this.value = maskCPF(this.value);
+            });
+        }
+        if (phoneField) {
+            phoneField.addEventListener('input', function() {
+                this.value = maskPhone(this.value);
+            });
+        }
+        if (secondPhoneField) {
+            secondPhoneField.addEventListener('input', function() {
+                this.value = maskPhone(this.value);
+            });
+        }
+        if (cardNumber) {
+            cardNumber.addEventListener('input', function() {
+                this.value = maskCardNumber(this.value);
+            });
+        }
+        if (cardExpiry) {
+            cardExpiry.addEventListener('input', function() {
+                this.value = maskExpiry(this.value);
+            });
+        }
+        if (cardCvv) {
+            cardCvv.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '').slice(0, 4);
+            });
+        }
+
+        const form = document.getElementById('checkoutForm');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (cpfField) cpfField.value = cpfField.value.replace(/\D/g, '');
+                if (phoneField) phoneField.value = phoneField.value.replace(/\D/g, '');
+                if (secondPhoneField) secondPhoneField.value = secondPhoneField.value.replace(/\D/g, '');
+            });
+        }
+    }
+
+    function getSelectedPaymentMethod() {
+        const form = document.getElementById('checkoutForm');
+        if (!form) return '';
+        const checked = form.querySelector('.payment-method-input:checked');
+        return checked ? checked.value : '';
+    }
+
+    function updatePaymentPanels() {
+        const caption = document.getElementById('paymentCardCaption');
+        const value = getSelectedPaymentMethod();
+
+        document.querySelectorAll('[data-payment-panel]').forEach(function(panel) {
+            const modes = panel.getAttribute('data-payment-panel').split(',').map(function(s) { return s.trim(); });
+            const show = modes.indexOf(value) !== -1;
+            panel.classList.toggle('payment-detail--hidden', !show);
+        });
+
+        document.querySelectorAll('.payment-method-card').forEach(function(card) {
+            const input = card.querySelector('.payment-method-input');
+            card.classList.toggle('payment-method-card--selected', input && input.checked);
+        });
+
+        if (caption) {
+            if (value === 'CARTAO_CREDITO') caption.textContent = 'Cartão de crédito';
+            else if (value === 'CARTAO_DEBITO') caption.textContent = 'Cartão de débito';
+            else caption.textContent = 'Crédito ou débito';
+        }
+
+        lucide.createIcons();
+    }
+
+    function buildPixQrData() {
+        const form = document.getElementById('checkoutForm');
+        const total = form && form.dataset.totalAmount ? form.dataset.totalAmount : '0';
+        const title = form && form.dataset.eventTitle ? form.dataset.eventTitle : 'Evently';
+        return 'PIX|Evently|' + title + '|Total:' + total + '|Chave:evently.pagamentos.pix@fametro.demo';
+    }
+
+    function initPixQr() {
+        const img = document.getElementById('pixQrImg');
+        if (!img) return;
+        const data = encodeURIComponent(buildPixQrData());
+        img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + data;
+    }
+
+    function initPixCopy() {
+        const btn = document.getElementById('pixCopyBtn');
+        const keyEl = document.getElementById('pixCopyKey');
+        if (!btn || !keyEl) return;
+
+        btn.addEventListener('click', function() {
+            const text = keyEl.textContent;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    btn.textContent = 'Copiado!';
+                    setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
+                });
+            } else {
+                const temp = document.createElement('textarea');
+                temp.value = text;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                temp.remove();
+                btn.textContent = 'Copiado!';
+                setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
+            }
+        });
+    }
+
+    function initBoletoDemo() {
+        const btn = document.getElementById('boletoGenerateBtn');
+        const box = document.getElementById('boletoResult');
+        const link = document.getElementById('boletoPdfLink');
+        if (!btn || !box) return;
+
+        btn.addEventListener('click', function() {
+            box.classList.remove('payment-detail--hidden');
+            btn.textContent = 'Boleto gerado';
+            btn.disabled = true;
+        });
+
+        if (link) {
+            link.addEventListener('click', function(ev) {
+                ev.preventDefault();
+                alert('Em um projeto real, aqui baixaria o PDF do boleto.');
+            });
+        }
+    }
+
+    function showPaymentError(message) {
+        const existingAlert = document.querySelector('.payment-validation-error');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+
+        const alert = document.createElement('div');
+        alert.className = 'checkout-alert checkout-alert-erro payment-validation-error';
+        alert.style.marginBottom = '16px';
+        alert.innerHTML = '<span>' + message + '</span>';
+
+        const dataCard = document.querySelector('.checkout-data-card');
+        if (dataCard) {
+            dataCard.insertBefore(alert, dataCard.firstChild);
+            alert.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    function validatePaymentFields() {
+        const paymentMethod = getSelectedPaymentMethod();
+
+        if (!paymentMethod) {
+            showPaymentError('Por favor, selecione um método de pagamento.');
+            return false;
+        }
+
+        if (paymentMethod === 'CARTAO_CREDITO' || paymentMethod === 'CARTAO_DEBITO') {
+            const cardNumber = document.getElementById('cardNumber');
+            const cardName = document.getElementById('cardName');
+            const cardExpiry = document.getElementById('cardExpiry');
+            const cardCvv = document.getElementById('cardCvv');
+
+            const numberClean = cardNumber.value.replace(/\D/g, '');
+            const expiryClean = cardExpiry.value.replace(/\D/g, '');
+            const cvvClean = cardCvv.value.replace(/\D/g, '');
+
+            if (!numberClean || numberClean.length < 13) {
+                showPaymentError('Por favor, preencha o número do cartão válido.');
+                return false;
+            }
+            if (!cardName.value.trim()) {
+                showPaymentError('Por favor, preencha o nome impresso no cartão.');
+                return false;
+            }
+            if (!expiryClean || expiryClean.length < 4) {
+                showPaymentError('Por favor, preencha a data de validade (MM/AA).');
+                return false;
+            }
+            if (!cvvClean || cvvClean.length < 3) {
+                showPaymentError('Por favor, preencha o CVV.');
+                return false;
+            }
+        }
+
+        if (paymentMethod === 'BOLETO') {
+            const boletoResult = document.getElementById('boletoResult');
+            if (boletoResult.classList.contains('payment-detail--hidden')) {
+                showPaymentError('Por favor, gere o boleto antes de finalizar a inscrição.');
+                return false;
+            }
+        }
+
+        const existingAlert = document.querySelector('.payment-validation-error');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+
+        return true;
+    }
+
+    function saveFormData() {
+        const form = document.getElementById('checkoutForm');
+        if (!form) return;
+
+        const data = {};
+        form.querySelectorAll('input[type="text"], input[type="email"], select').forEach(function(input) {
+            if (input.name && input.type !== 'hidden') {
+                data[input.name] = input.value;
+            }
+        });
+
+        form.querySelectorAll('.payment-method-input:checked').forEach(function(input) {
+            if (input.name) {
+                data[input.name] = input.value;
+            }
+        });
+
+        localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function restoreFormData() {
+        const savedData = localStorage.getItem(CHECKOUT_STORAGE_KEY);
+        if (!savedData) return;
+
+        try {
+            const data = JSON.parse(savedData);
+            const form = document.getElementById('checkoutForm');
+            if (!form) return;
+
+            Object.keys(data).forEach(function(key) {
+                const radios = form.querySelectorAll('input[type="radio"][name="' + key.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]');
+                if (radios.length) {
+                    radios.forEach(function(r) {
+                        r.checked = r.value === data[key];
+                    });
+                    return;
+                }
+
+                const el = form.elements.namedItem(key);
+                if (!el || !el.tagName) return;
+                if (el.type === 'hidden') return;
+                if (el.type === 'radio') return;
+
+                if (el.tagName === 'SELECT' || el.tagName === 'INPUT') {
+                    el.value = data[key];
+                }
+            });
+        } catch (e) {
+            console.error('Erro ao restaurar dados do formulário:', e);
+        }
+    }
+
+    function clearCheckoutForm() {
+        const form = document.getElementById('checkoutForm');
+        if (!form) return;
+
+        localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+        localStorage.removeItem(CHECKOUT_RELOAD_FLAG);
+
+        form.reset();
+
+        ['cardNumber', 'cardName', 'cardExpiry', 'cardCvv', 'userCpf', 'userPhone', 'userSecondPhone'].forEach(function(id) {
+            const field = document.getElementById(id);
+            if (field) field.value = '';
+        });
+
+        const boletoResult = document.getElementById('boletoResult');
+        if (boletoResult) {
+            boletoResult.classList.add('payment-detail--hidden');
+        }
+
+        const boletoGenerateBtn = document.getElementById('boletoGenerateBtn');
+        if (boletoGenerateBtn) {
+            boletoGenerateBtn.textContent = 'Gerar boleto';
+            boletoGenerateBtn.disabled = false;
+        }
+
+        const paymentError = document.querySelector('.payment-validation-error');
+        if (paymentError) {
+            paymentError.remove();
+        }
+
+        updatePaymentPanels();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        applyMasks();
+
+        const wasReload = localStorage.getItem(CHECKOUT_RELOAD_FLAG) === 'true' || isReloadNavigation();
+
+        if (wasReload) {
+            localStorage.removeItem(CHECKOUT_RELOAD_FLAG);
+            restoreFormData();
+        } else {
+            restoreFormData();
+        }
+
+        initPixQr();
+        initPixCopy();
+        initBoletoDemo();
+
+        const form = document.getElementById('checkoutForm');
+        if (form) {
+            form.querySelectorAll('.payment-method-input').forEach(function(r) {
+                r.addEventListener('change', updatePaymentPanels);
+                r.addEventListener('click', updatePaymentPanels);
+            });
+
+            updatePaymentPanels();
+
+            form.addEventListener('submit', function(e) {
+                if (!validatePaymentFields()) {
+                    e.preventDefault();
+                    return;
+                }
+
+                isFormSubmitting = true;
+                clearCheckoutForm();
+            });
+        }
+
+        window.addEventListener('beforeunload', function() {
+            if (isFormSubmitting) {
+                localStorage.removeItem(CHECKOUT_RELOAD_FLAG);
+                return;
+            }
+
+            if (isReloadNavigation()) {
+                localStorage.setItem(CHECKOUT_RELOAD_FLAG, 'true');
+            } else {
+                localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+                localStorage.removeItem(CHECKOUT_RELOAD_FLAG);
+            }
+        });
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                updatePaymentPanels();
+            }
+        });
+    });
+
+    document.addEventListener('input', saveFormData);
+    document.addEventListener('change', saveFormData);
+</script>
+</body>
+
+</html>

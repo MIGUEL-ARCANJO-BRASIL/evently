@@ -1,6 +1,9 @@
 package fametro.edu.br.evently.event.controller;
 
 import fametro.edu.br.evently.event.dto.EventFormDTO;
+import fametro.edu.br.evently.event.dto.JoinEventFormDTO;
+import fametro.edu.br.evently.event.enums.AgeRange;
+import fametro.edu.br.evently.event.enums.PaymentMethod;
 import fametro.edu.br.evently.event.model.Event;
 import fametro.edu.br.evently.event.service.CategoryService;
 import fametro.edu.br.evently.event.service.EventService;
@@ -17,8 +20,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/events")
@@ -43,9 +49,29 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable UUID id, Model model) {
+    public String detail(@PathVariable UUID id,
+                         @AuthenticationPrincipal User user,
+                         Model model) {
         model.addAttribute("event", eventService.findById(id));
         return "events/detail"; // Sem a palavra 'templates/'
+    }
+
+    @PostMapping("/{id}/checkout")
+    public String checkout(@PathVariable UUID id,
+                           @RequestParam String selectedTickets,
+                           @AuthenticationPrincipal User user,
+                           RedirectAttributes redirectAttributes,
+                           Model model) {
+        return renderCheckout(id, selectedTickets, user, redirectAttributes, model);
+    }
+
+    @GetMapping("/{id}/checkout")
+    public String checkoutPage(@PathVariable UUID id,
+                               @RequestParam String selectedTickets,
+                               @AuthenticationPrincipal User user,
+                               RedirectAttributes redirectAttributes,
+                               Model model) {
+        return renderCheckout(id, selectedTickets, user, redirectAttributes, model);
     }
 
     @GetMapping("/new")
@@ -140,7 +166,7 @@ public class EventController {
             log.info("Imagem recebida: {}, tamanho: {}", coverImage.getOriginalFilename(), coverImage.getSize());
             form.setCoverImage(coverImage);
         } else {
-            log.info("Sem imagem nova. isEmpty={}, size={}, name={}",
+            log.info("Sem imagem nova. isEmpty={}, size={}, userName={}",
                     coverImage.isEmpty(), coverImage.getSize(), coverImage.getOriginalFilename());
         }
 
@@ -157,5 +183,100 @@ public class EventController {
         redirectAttributes.addFlashAttribute("sucesso", msg);
         return "redirect:/admin/my-events";
     }
+
+    private JoinEventFormDTO buildSubscriptionForm(UUID eventId, User user) {
+        String userName = "";
+        String userSecondName = "";
+
+        if (user != null && user.getName() != null) {
+            String[] nameParts = user.getName().trim().split("\\s+", 2);
+            userName = nameParts[0];
+            if (nameParts.length > 1) {
+                userSecondName = nameParts[1];
+            }
+        }
+
+        return JoinEventFormDTO.builder()
+                .eventId(eventId)
+                .userName(userName)
+                .userSecondName(userSecondName)
+                .userCpf(user != null ? user.getCpf() : "")
+                .userEmail(user != null ? user.getEmail() : "")
+                .userPhone(user != null ? user.getPhone() : "")
+                .userSecondPhone("")
+                .userCity("")
+                .build();
+    }
+
+    private String renderCheckout(UUID eventId,
+                                  String selectedTickets,
+                                  User user,
+                                  RedirectAttributes redirectAttributes,
+                                  Model model) {
+        Event event = eventService.findById(eventId);
+        List<CheckoutItem> checkoutItems = buildCheckoutItems(event, selectedTickets);
+
+        if (checkoutItems.isEmpty()) {
+            redirectAttributes.addFlashAttribute("erroInscricao", "Selecione ao menos um ingresso.");
+            return "redirect:/events/" + eventId;
+        }
+
+        double totalAmount = checkoutItems.stream()
+                .mapToDouble(item -> item.unitPrice() * item.quantity())
+                .sum();
+
+        JoinEventFormDTO subscriptionForm = buildSubscriptionForm(eventId, user);
+        subscriptionForm.setSelectedTickets(selectedTickets);
+
+        model.addAttribute("event", event);
+        model.addAttribute("checkoutItems", checkoutItems);
+        model.addAttribute("totalAmount", totalAmount);
+        model.addAttribute("subscriptionForm", subscriptionForm);
+        model.addAttribute("ageRanges", AgeRange.values());
+        model.addAttribute("paymentMethods", PaymentMethod.values());
+        return "events/checkout";
+    }
+
+    private List<CheckoutItem> buildCheckoutItems(Event event, String selectedTickets) {
+        if (selectedTickets == null || selectedTickets.isBlank()) {
+            return List.of();
+        }
+
+        Map<UUID, Integer> quantityByTicket = Arrays.stream(selectedTickets.split(","))
+                .map(String::trim)
+                .filter(part -> !part.isBlank() && part.contains(":"))
+                .map(part -> part.split(":"))
+                .filter(parts -> parts.length == 2)
+                .map(parts -> Map.entry(parseUuid(parts[0]), parseQuantity(parts[1])))
+                .filter(entry -> entry.getKey() != null && entry.getValue() > 0)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
+
+        return event.getTickets().stream()
+                .filter(ticket -> quantityByTicket.containsKey(ticket.getId()))
+                .map(ticket -> new CheckoutItem(
+                        ticket.getName(),
+                        quantityByTicket.get(ticket.getId()),
+                        ticket.getValue() != null ? ticket.getValue() : 0.0
+                ))
+                .toList();
+    }
+
+    private UUID parseUuid(String value) {
+        try {
+            return UUID.fromString(value.trim());
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private int parseQuantity(String value) {
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
+    private record CheckoutItem(String ticketName, int quantity, double unitPrice) {}
 
 }

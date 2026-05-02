@@ -35,6 +35,8 @@ public class SecurityConfig {
                                 "/error"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/events", "/events/*").permitAll()
+                        .requestMatchers("/events/subscription/*").permitAll()
+                        .requestMatchers("/events/*/checkout").permitAll()
                         .requestMatchers("/events/new").hasRole("ADMIN")
                         .requestMatchers("/events/*/edit", "/events/*/archive").hasAnyRole("ADMIN", "ORGANIZADOR")
                         .requestMatchers("/admin/**").hasRole("ADMIN")

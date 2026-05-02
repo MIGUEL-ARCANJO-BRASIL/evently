@@ -35,7 +35,7 @@ public class AuthService {
     }
 
     public boolean existsByCpf(String cpf) {
-        log.info("Usuário existe - cpf: {}", cpf);
+        log.info("Usuário existe - userCpf: {}", cpf);
         return this.userRepository.findByCpf(cpf).isPresent();
     }
 

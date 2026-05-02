@@ -1,6 +1,7 @@
 package fametro.edu.br.evently.event.model;
 
 import fametro.edu.br.evently.event.enums.EventStatus;
+import fametro.edu.br.evently.event.enums.PaymentMethod;
 import fametro.edu.br.evently.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -49,6 +50,9 @@ public class Event {
     @JoinColumn(name = "organizer_id")
     private User organizer;
 
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "cep", column = @Column(name = "loc_cep")),
@@ -56,7 +60,7 @@ public class Event {
             @AttributeOverride(name = "complement", column = @Column(name = "loc_complement")),
             @AttributeOverride(name = "number", column = @Column(name = "loc_number")),
             @AttributeOverride(name = "neighborhood", column = @Column(name = "loc_neighborhood")),
-            @AttributeOverride(name = "city", column = @Column(name = "loc_city")),
+            @AttributeOverride(name = "userCity", column = @Column(name = "loc_city")),
             @AttributeOverride(name = "state", column = @Column(name = "loc_state")),
 
     })

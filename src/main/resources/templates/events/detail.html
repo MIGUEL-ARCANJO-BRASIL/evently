@@ -136,28 +136,20 @@
                     </div>
 
                     <div class="checkout-section">
-                        <a href="#" class="discount-link">
-                            <i data-lucide="ticket"></i> Inserir cupom de desconto
-                        </a>
+                        <div th:if="${sucessoInscricao}" style="margin-bottom: 12px; color: #065f46; font-size: 14px;">
+                            <span th:text="${sucessoInscricao}"></span>
+                        </div>
+                        <div th:if="${erroInscricao}" style="margin-bottom: 12px; color: #991b1b; font-size: 14px;">
+                            <span th:text="${erroInscricao}"></span>
+                        </div>
 
-                        <form sec:authorize="isAuthenticated()" th:action="@{/registrations/{id}(id=${event.id})}"
-                            method="post">
-                            <!-- Campos ocultos para os ingressos selecionados seriam adicionados aqui via JS se necessário -->
+                        <form th:action="@{/events/{id}/checkout(id=${event.id})}" method="post" id="checkoutForm">
+                            <input type="hidden" name="selectedTickets" id="selectedTicketsInput">
+
                             <button type="submit" id="checkoutBtn" class="btn-checkout" disabled>
-                                Selecione um Ingresso
+                                Selecione um ingresso
                             </button>
                         </form>
-
-                        <a sec:authorize="isAnonymous()" th:href="@{/auth/login}" class="btn-checkout">
-                            Faça login para comprar
-                        </a>
-
-                        <div style="margin-top: 16px;">
-                            <a href="#"
-                                style="font-size: 12px; color: #6b7280; text-decoration: underline; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                <i data-lucide="info" style="width: 14px; height: 14px;"></i> Entenda nossa taxa
-                            </a>
-                        </div>
                     </div>
                 </div>
 
@@ -201,12 +193,21 @@
 
             if (totalSelected > 0) {
                 checkoutBtn.disabled = false;
-                checkoutBtn.textContent = 'Comprar Ingresso';
+                checkoutBtn.textContent = 'Ir para checkout';
                 checkoutBtn.style.background = '#10b981'; // Green from image
             } else {
                 checkoutBtn.disabled = true;
-                checkoutBtn.textContent = 'Selecione um Ingresso';
+                checkoutBtn.textContent = 'Selecione um ingresso';
                 checkoutBtn.style.background = '#f3f4f6';
+            }
+
+            const selectedTicketsInput = document.getElementById('selectedTicketsInput');
+            if (selectedTicketsInput) {
+                const selected = Object.entries(selections)
+                    .filter(([_, qty]) => qty > 0)
+                    .map(([ticketId, qty]) => `${ticketId}:${qty}`)
+                    .join(',');
+                selectedTicketsInput.value = selected;
             }
         }
     </script>
