@@ -54,9 +54,8 @@ public class EventSubscriptionService {
     private void validateUser(UUID eventId, JoinEventFormDTO dto) {
 
         this.subscriptionRepository.findByEvent_IdAndUserEmail(eventId, dto.getUserEmail()).ifPresent(e -> {
-                    throw new RuntimeException("Já existe uma inscrição para este email neste evento.");
-                }
-        );
+            throw new RuntimeException("Já existe uma inscrição para este email neste evento.");
+        });
 
         this.userRepository.findByEmail(dto.getUserEmail()).ifPresent(e -> {
             if (!e.getCpf().equals(dto.getUserCpf())) {
@@ -70,10 +69,8 @@ public class EventSubscriptionService {
         });
 
         this.subscriptionRepository.findByEvent_IdAndUserCpf(eventId, dto.getUserEmail()).ifPresent(e -> {
-                    throw new RuntimeException("Já existe uma inscrição para este CPF neste evento.");
-                }
-        );
-
+            throw new RuntimeException("Já existe uma inscrição para este CPF neste evento.");
+        });
 
     }
 
@@ -85,8 +82,7 @@ public class EventSubscriptionService {
         Map<UUID, Double> priceByTicketId = event.getTickets().stream()
                 .collect(Collectors.toMap(
                         fametro.edu.br.evently.event.model.EventTicket::getId,
-                        ticket -> ticket.getValue() != null ? ticket.getValue() : 0.0
-                ));
+                        ticket -> ticket.getValue() != null ? ticket.getValue() : 0.0));
 
         return Arrays.stream(selectedTickets.split(","))
                 .map(String::trim)

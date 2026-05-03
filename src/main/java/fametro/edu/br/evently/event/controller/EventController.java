@@ -58,7 +58,7 @@ public class EventController {
 
     @PostMapping("/{id}/checkout")
     public String checkout(@PathVariable UUID id,
-                           @RequestParam String selectedTickets,
+                           @RequestParam(required = false) String selectedTickets,
                            @AuthenticationPrincipal User user,
                            RedirectAttributes redirectAttributes,
                            Model model) {
@@ -67,7 +67,7 @@ public class EventController {
 
     @GetMapping("/{id}/checkout")
     public String checkoutPage(@PathVariable UUID id,
-                               @RequestParam String selectedTickets,
+                               @RequestParam(required = false) String selectedTickets,
                                @AuthenticationPrincipal User user,
                                RedirectAttributes redirectAttributes,
                                Model model) {
