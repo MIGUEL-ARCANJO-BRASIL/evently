@@ -31,10 +31,6 @@ public class EventFormDTO {
     @Future(message = "A data do evento deve ser no futuro")
     private LocalDateTime eventDate;
 
-    @NotNull(message = "Data e hora são obrigatórias")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    private LocalDateTime registrationDeadline;
-
     @NotNull(message = "Vagas são obrigatórias")
     @Min(value = 1, message = "Mínimo de 1 vaga")
     private Integer totalSlots;

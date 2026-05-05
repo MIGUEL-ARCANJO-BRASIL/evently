@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Ingressos — Evently</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/user-my-tickets.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="tickets-body">
+    <div th:replace="~{fragments/navbar :: navbar('tickets')}"></div>
+
+    <main class="tickets-container">
+        <header class="page-header">
+            <h1 class="page-title">Meus Ingressos</h1>
+            <p class="page-subtitle">Gerencie suas participações e acesse seus tickets.</p>
+        </header>
+
+        <nav class="tabs-nav">
+            <button class="tab-btn active" id="btnUpcoming">Próximos Eventos</button>
+            <button class="tab-btn" id="btnFinished">Eventos Encerrados</button>
+        </nav>
+
+        <div class="tickets-layout-unified">
+            <!-- Section: Upcoming Tickets -->
+            <section class="tickets-section" id="upcomingSection">
+                <div th:if="${#lists.isEmpty(upcomingTickets)}" class="empty-state">
+                    <i data-lucide="calendar-x" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <p>Você não possui eventos futuros programados.</p>
+                </div>
+
+                <article th:each="ticket : ${upcomingTickets}" class="ticket-card">
+                    <div class="ticket-img-wrapper">
+                        <img th:if="${ticket.coverImage != null}" 
+                             th:src="${ticket.coverImage.startsWith('http') ? ticket.coverImage : '/uploads/' + ticket.coverImage}" 
+                             class="ticket-img" alt="Capa">
+                        <div th:if="${ticket.coverImage == null}" class="ticket-img-placeholder">Sem imagem</div>
+                        <span class="category-badge" th:text="${ticket.categoryName}">TECH</span>
+                    </div>
+
+                    <div class="ticket-content">
+                        <div class="ticket-header">
+                            <h2 class="ticket-title" th:text="${ticket.eventTitle}">Tech Conference 2024</h2>
+                            <span class="status-badge">CONFIRMADO</span>
+                        </div>
+
+                        <div class="ticket-details">
+                            <div class="detail-item">
+                                <i data-lucide="calendar"></i>
+                                <span th:text="${#temporals.format(ticket.eventDate, 'dd MMM, yyyy • HH:mm')}">15 Out, 2024 • 09:00</span>
+                            </div>
+                            <div class="detail-item">
+                                <i data-lucide="map-pin"></i>
+                                <span th:text="${ticket.eventCity + ', ' + ticket.eventState}">São Paulo, SP</span>
+                            </div>
+                            <div class="detail-item">
+                                <i data-lucide="ticket"></i>
+                                <span th:text="${ticket.ticketName}">VIP All-Access</span>
+                            </div>
+                        </div>
+
+                        <div class="ticket-actions">
+                            <a th:href="@{/events/subscription/{id}/summary(id=${ticket.idSubscription})}" class="btn-ticket">
+                                <i data-lucide="external-link"></i>
+                                Ver Ingresso
+                            </a>
+                            <a th:href="@{/events/{id}(id=${ticket.eventId})}" class="btn-details">Detalhes do Evento</a>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Section: Finished Tickets -->
+            <section class="tickets-section" id="finishedSection" style="display: none;">
+                <div th:if="${#lists.isEmpty(finishedTickets)}" class="empty-state">
+                    <i data-lucide="archive" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <p>Nenhum evento encerrado no seu histórico.</p>
+                </div>
+
+                <article th:each="ticket : ${finishedTickets}" class="ticket-card finished">
+                    <div class="ticket-img-wrapper grayscale">
+                        <img th:if="${ticket.coverImage != null}" 
+                             th:src="${ticket.coverImage.startsWith('http') ? ticket.coverImage : '/uploads/' + ticket.coverImage}" 
+                             class="ticket-img" alt="Capa">
+                        <div th:if="${ticket.coverImage == null}" class="ticket-img-placeholder">Sem imagem</div>
+                        <span class="category-badge">ENCERRADO</span>
+                    </div>
+
+                    <div class="ticket-content">
+                        <div class="ticket-header">
+                            <h2 class="ticket-title" th:text="${ticket.eventTitle}">Tech Conference 2024</h2>
+                            <div class="badges-row">
+                                <span th:if="${ticket.checkedIn}" class="status-badge checkin">
+                                    <i data-lucide="check-check"></i>
+                                    CHECK-IN REALIZADO
+                                </span>
+                                <span th:if="${ticket.checkedIn == null or !ticket.checkedIn}" class="status-badge missed">
+                                    <i data-lucide="x-circle"></i>
+                                    CHECK-IN NÃO REALIZADO
+                                </span>
+                                <span class="status-badge finished">REALIZADO</span>
+                            </div>
+                        </div>
+
+                        <div class="ticket-details">
+                            <div class="detail-item">
+                                <i data-lucide="calendar"></i>
+                                <span th:text="${#temporals.format(ticket.eventDate, 'dd MMM, yyyy')}">15 Out, 2024</span>
+                            </div>
+                            
+                            <div class="detail-item" th:if="${ticket.checkedIn}" style="color: #059669;">
+                                <i data-lucide="clock" style="color: #059669;"></i>
+                                <span th:text="'Check-in em: ' + ${#temporals.format(ticket.checkInDate, 'dd/MM/yyyy HH:mm')}">Check-in em: 15/10/24 09:30</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <i data-lucide="map-pin"></i>
+                                <span th:text="${ticket.eventCity + ', ' + ticket.eventState}">São Paulo, SP</span>
+                            </div>
+                        </div>
+
+                        <div class="ticket-actions">
+                            <a th:href="@{/events/{id}(id=${ticket.eventId})}" class="btn-details full-width">Detalhes do Evento</a>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script>
+        lucide.createIcons();
+
+        const btnUpcoming = document.getElementById('btnUpcoming');
+        const btnFinished = document.getElementById('btnFinished');
+        const upcomingSection = document.getElementById('upcomingSection');
+        const finishedSection = document.getElementById('finishedSection');
+
+        btnUpcoming.addEventListener('click', () => {
+            btnUpcoming.classList.add('active');
+            btnFinished.classList.remove('active');
+            upcomingSection.style.display = 'flex';
+            finishedSection.style.display = 'none';
+        });
+
+        btnFinished.addEventListener('click', () => {
+            btnFinished.classList.add('active');
+            btnUpcoming.classList.remove('active');
+            upcomingSection.style.display = 'none';
+            finishedSection.style.display = 'flex';
+        });
+    </script>
+</body>
+
+</html>

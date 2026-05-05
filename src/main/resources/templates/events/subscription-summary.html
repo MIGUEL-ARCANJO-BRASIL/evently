@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscrição Confirmada - Evently</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/subscription-summary.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="summary-body">
+    <div th:replace="~{fragments/navbar :: navbar('events')}"></div>
+
+    <main class="summary-container">
+        <div class="status-icon-wrapper">
+            <i data-lucide="check-circle-2"></i>
+        </div>
+
+        <h1 class="confirmation-title">Inscrição Confirmada!</h1>
+        <p class="confirmation-subtitle">Prepare-se para uma experiência inesquecível.</p>
+
+        <!-- Ticket Card -->
+        <div class="ticket-card">
+            <div class="ticket-info">
+                <span class="ticket-category"
+                    th:text="${summary.eventCity != null ? 'TECH & INNOVATION' : 'EVENTO'}">TECH & INNOVATION</span>
+                <h2 class="ticket-event-title" th:text="${summary.eventTitle}">Tech Conference 2024</h2>
+
+                <div class="ticket-details-grid">
+                    <div class="detail-group">
+                        <div class="detail-label">DATA E HORA</div>
+                        <div class="detail-value">
+                            <i data-lucide="calendar"></i>
+                            <span th:text="${#temporals.format(summary.eventDate, 'MMM dd, yyyy, HH:mm')}">Dec 15, 2024,
+                                09:00</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-group">
+                        <div class="detail-label">LOCALIZAÇÃO</div>
+                        <div class="detail-value">
+                            <i data-lucide="map-pin"></i>
+                            <span th:text="${summary.eventCity + ', ' + summary.eventState}">São Paulo, SP</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-group">
+                        <div class="detail-label">PARTICIPANTE</div>
+                        <div class="detail-value">
+                            <i data-lucide="user"></i>
+                            <span th:text="${summary.userName}">João Silva</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-group">
+                        <div class="detail-label">TIPO DE INGRESSO</div>
+                        <div class="detail-value">
+                            <i data-lucide="ticket"></i>
+                            <span th:text="${#strings.listJoin(summary.ticketsName, ', ')}">VIP All-Access</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ticket-qrcode-section">
+                <div class="qr-wrapper">
+                    <img th:src="@{/events/subscription/{id}/qrcode(id=${summary.idSubscription})}" alt="QR Code"
+                        width="120" height="120">
+                </div>
+                <span class="qr-scan-label">SCANEIE NA ENTRADA</span>
+            </div>
+        </div>
+
+        <!-- Transaction Summary -->
+        <section class="transaction-card">
+            <h3 class="transaction-title">Resumo da Transação</h3>
+
+            <div class="transaction-row">
+                <span class="row-label">ID da transação</span>
+                <span class="row-value"
+                    th:text="'#' + ${summary.idSubscription.toString().substring(0, 8)}">#12345</span>
+            </div>
+
+            <div class="transaction-row">
+                <span class="row-label">Método de pagamento</span>
+                <div class="row-value">
+                    <i th:if="${summary.paymentMethod.name() == 'CARTAO_CREDITO'}" data-lucide="credit-card"></i>
+                    <i th:if="${summary.paymentMethod.name() == 'PIX'}" data-lucide="qr-code"></i>
+                    <i th:if="${summary.paymentMethod.name() == 'BOLETO'}" data-lucide="file-text"></i>
+                    <i th:if="${summary.paymentMethod.name() == 'GRATUITO'}" data-lucide="gift"></i>
+                    <span
+                        th:text="${summary.paymentMethod.name() == 'GRATUITO' ? 'Inscrição Gratuita' : summary.paymentMethod}">Credit
+                        Card **** 4242</span>
+                </div>
+            </div>
+
+            <div class="transaction-row">
+                <span class="row-label">Data do pagamento</span>
+                <span class="row-value" th:text="${#temporals.format(summary.purchaseDate, 'MMM dd, yyyy')}">Oct 24,
+                    2024</span>
+            </div>
+        </section>
+
+        <!-- Actions -->
+        <div class="summary-actions">
+            <a th:href="@{/events/subscription/{id}/ticket/pdf(id=${summary.idSubscription})}" class="btn-download">
+                <i data-lucide="download"></i>
+                Download Ticket (PDF)
+            </a>
+        </div>
+
+        <a th:href="@{/user/tickets}" class="return-link">
+            <i data-lucide="arrow-left"></i>
+            Voltar para Meus Ingressos
+        </a>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

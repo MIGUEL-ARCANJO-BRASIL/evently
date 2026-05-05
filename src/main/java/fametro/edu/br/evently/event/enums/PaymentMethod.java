@@ -4,9 +4,11 @@ public enum PaymentMethod {
     CARTAO_CREDITO,
     CARTAO_DEBITO,
     PIX,
-    BOLETO;
+    BOLETO,
+    GRATUITO;
 
     public static String convertPaymentMethodToString(PaymentMethod paymentMethod) {
+        if (paymentMethod == null) return "Desconhecido";
         switch (paymentMethod) {
             case CARTAO_CREDITO:
                 return "Crédito";
@@ -16,6 +18,8 @@ public enum PaymentMethod {
                 return "Pix";
             case BOLETO:
                 return "Boleto";
+            case GRATUITO:
+                return "Gratuito";
             default:
                 return "Desconhecido";
         }

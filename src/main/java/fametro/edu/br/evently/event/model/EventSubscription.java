@@ -8,6 +8,8 @@ import lombok.*;
 import org.hibernate.validator.constraints.br.CPF;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -72,5 +74,18 @@ public class EventSubscription {
     @Enumerated(EnumType.STRING)
     private SubscriptionStatus status;
 
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "lastFourDigits", column = @Column(name = "payment_last_four")),
+            @AttributeOverride(name = "cardBrand", column = @Column(name = "payment_card_brand")),
+            @AttributeOverride(name = "paymentToken", column = @Column(name = "payment_token"))
+    })
+    private PaymentCard paymentCard;
 
+    @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<SubscriptionItem> items = new ArrayList<>();
+
+    @OneToOne(mappedBy = "subscription", cascade = CascadeType.ALL, orphanRemoval = true)
+    private EventTransaction transaction;
 }

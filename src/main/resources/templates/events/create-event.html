@@ -11,7 +11,7 @@
 
 <body>
 
-    <div th:replace="~{fragments/navbar :: navbar('dashboard')}"></div>
+    <div th:replace="~{fragments/navbar :: navbar('create')}"></div>
 
     <main class="create-event-page">
         <section class="create-event-layout">
@@ -87,12 +87,6 @@
                                 th:errors="*{eventDate}"></span>
                         </div>
 
-                        <div class="form-group">
-                            <label for="registrationDeadline">Prazo de Inscrição</label>
-                            <input type="datetime-local" id="registrationDeadline" th:field="*{registrationDeadline}">
-                            <span class="field-error" th:if="${#fields.hasErrors('registrationDeadline')}"
-                                th:errors="*{registrationDeadline}"></span>
-                        </div>
                     </div>
 
                     <div class="localization-section"
@@ -151,6 +145,10 @@
 
                         <div id="ticketsContainer">
                             <!-- Tickets serão adicionados aqui via JS -->
+                        </div>
+                        <div id="ticketsValidationError" style="display: none; margin-top: 12px; padding: 10px; background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; color: #dc2626; font-size: 13px; font-weight: 600; align-items: center; gap: 8px;">
+                            <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+                            <span id="validationErrorText">A soma da quantidade de ingressos não pode ultrapassar o total de vagas.</span>
                         </div>
 
                     </div>
@@ -246,13 +244,22 @@
             `;
             ticketsContainer.insertAdjacentHTML('beforeend', ticketHtml);
             lucide.createIcons();
+            
+            // Adicionar listener de validação para o novo campo de quantidade
+            const newQtyInput = document.querySelector(`#ticket-${index} input[type="number"]`);
+            if (newQtyInput) {
+                newQtyInput.addEventListener('input', validateTicketsTotal);
+            }
+            
             saveFormDraft();
+            validateTicketsTotal();
         }
 
         window.removeTicket = function (index) {
             document.getElementById(`ticket-${index}`).remove();
             reindexTickets();
             saveFormDraft();
+            validateTicketsTotal();
         }
 
         function reindexTickets() {
@@ -532,9 +539,41 @@
             }
         });
 
-        form.addEventListener('submit', function () {
+        form.addEventListener('submit', function (e) {
+            if (!validateTicketsTotal()) {
+                e.preventDefault();
+                alert('Corrija os erros na quantidade de ingressos antes de salvar.');
+                return;
+            }
             clearFormDraft();
         });
+
+        // Validação de Total de Ingressos vs Vagas
+        const totalSlotsInput = document.getElementById('totalSlots');
+        const validationError = document.getElementById('ticketsValidationError');
+        const validationText = document.getElementById('validationErrorText');
+
+        function validateTicketsTotal() {
+            const totalSlots = parseInt(totalSlotsInput.value) || 0;
+            let currentTotalTickets = 0;
+            
+            document.querySelectorAll('input[name*=".quantity"]').forEach(input => {
+                currentTotalTickets += parseInt(input.value) || 0;
+            });
+
+            if (currentTotalTickets > totalSlots) {
+                validationError.style.display = 'flex';
+                validationText.textContent = `A soma dos ingressos (${currentTotalTickets}) excede o total de vagas (${totalSlots}).`;
+                totalSlotsInput.style.borderColor = '#dc2626';
+                return false;
+            } else {
+                validationError.style.display = 'none';
+                totalSlotsInput.style.borderColor = '#e5e7eb';
+                return true;
+            }
+        }
+
+        totalSlotsInput.addEventListener('input', validateTicketsTotal);
 
         document.querySelectorAll('a[href]').forEach(link => {
             link.addEventListener('click', function () {

@@ -5,9 +5,11 @@ import fametro.edu.br.evently.event.dto.JoinEventFormDTO;
 import fametro.edu.br.evently.event.enums.AgeRange;
 import fametro.edu.br.evently.event.enums.PaymentMethod;
 import fametro.edu.br.evently.event.model.Event;
+import fametro.edu.br.evently.event.repository.SubscriptionItemRepository;
 import fametro.edu.br.evently.event.service.CategoryService;
 import fametro.edu.br.evently.event.service.EventService;
 import fametro.edu.br.evently.user.model.User;
+import fametro.edu.br.evently.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -34,6 +34,8 @@ public class EventController {
 
     private final EventService eventService;
     private final CategoryService categoryService;
+    private final UserRepository userRepository;
+    private final SubscriptionItemRepository subscriptionItemRepository;
 
     @GetMapping
     public String list(@RequestParam(required = false) String category, 
@@ -52,8 +54,25 @@ public class EventController {
     public String detail(@PathVariable UUID id,
                          @AuthenticationPrincipal User user,
                          Model model) {
-        model.addAttribute("event", eventService.findById(id));
-        return "events/detail"; // Sem a palavra 'templates/'
+        Event event = eventService.findById(id);
+        
+        Map<UUID, Integer> remainingTickets = new HashMap<>();
+        for (var ticket : event.getTickets()) {
+            Integer sold = subscriptionItemRepository.sumQuantityByTicketId(ticket.getId());
+            remainingTickets.put(ticket.getId(), Math.max(0, ticket.getQuantity() - sold));
+        }
+
+        boolean allTicketsExpired = !event.getTickets().isEmpty() && event.getTickets().stream()
+                .allMatch(t -> t.getExpirationDate() != null && t.getExpirationDate().isBefore(LocalDate.now()));
+        
+        boolean allTicketsSoldOut = !event.getTickets().isEmpty() && event.getTickets().stream()
+                .allMatch(t -> remainingTickets.get(t.getId()) <= 0);
+        
+        model.addAttribute("event", event);
+        model.addAttribute("allTicketsExpired", allTicketsExpired);
+        model.addAttribute("allTicketsSoldOut", allTicketsSoldOut);
+        model.addAttribute("remainingTickets", remainingTickets);
+        return "events/detail";
     }
 
     @PostMapping("/{id}/checkout")
@@ -112,7 +131,6 @@ public class EventController {
         form.setDescription(event.getDescription());
         form.setEventDate(event.getEventDate());
         form.setTotalSlots(event.getTotalSlots());
-        form.setRegistrationDeadline(event.getRegistrationDeadline());
 
         if (event.getEventLocalization() != null) {
             form.setCep(event.getEventLocalization().getCep());
@@ -184,25 +202,44 @@ public class EventController {
         return "redirect:/admin/my-events";
     }
 
-    private JoinEventFormDTO buildSubscriptionForm(UUID eventId, User user) {
+    @PostMapping("/{id}/delete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
+    public String delete(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
+        eventService.delete(id);
+        redirectAttributes.addFlashAttribute("sucesso", "Evento excluído com sucesso!");
+        return "redirect:/admin/my-events";
+    }
+
+    private JoinEventFormDTO buildSubscriptionForm(UUID eventId, User principal) {
         String userName = "";
         String userSecondName = "";
+        String userPhone = "";
+        String userCpf = "";
+        String userEmail = "";
 
-        if (user != null && user.getName() != null) {
-            String[] nameParts = user.getName().trim().split("\\s+", 2);
-            userName = nameParts[0];
-            if (nameParts.length > 1) {
-                userSecondName = nameParts[1];
+        if (principal != null) {
+            // Fetch the latest data from the database to ensure we have the phone number
+            User user = userRepository.findById(principal.getId()).orElse(principal);
+
+            if (user.getName() != null) {
+                String[] nameParts = user.getName().trim().split("\\s+", 2);
+                userName = nameParts[0];
+                if (nameParts.length > 1) {
+                    userSecondName = nameParts[1];
+                }
             }
+            userPhone = user.getPhone() != null ? user.getPhone() : "";
+            userCpf = user.getCpf() != null ? user.getCpf() : "";
+            userEmail = user.getEmail() != null ? user.getEmail() : "";
         }
 
         return JoinEventFormDTO.builder()
                 .eventId(eventId)
                 .userName(userName)
                 .userSecondName(userSecondName)
-                .userCpf(user != null ? user.getCpf() : "")
-                .userEmail(user != null ? user.getEmail() : "")
-                .userPhone(user != null ? user.getPhone() : "")
+                .userCpf(userCpf)
+                .userEmail(userEmail)
+                .userPhone(userPhone)
                 .userSecondPhone("")
                 .userCity("")
                 .build();
@@ -225,13 +262,15 @@ public class EventController {
                 .mapToDouble(item -> item.unitPrice() * item.quantity())
                 .sum();
 
-        JoinEventFormDTO subscriptionForm = buildSubscriptionForm(eventId, user);
-        subscriptionForm.setSelectedTickets(selectedTickets);
+        if (!model.containsAttribute("subscriptionForm")) {
+            JoinEventFormDTO subscriptionForm = buildSubscriptionForm(eventId, user);
+            subscriptionForm.setSelectedTickets(selectedTickets);
+            model.addAttribute("subscriptionForm", subscriptionForm);
+        }
 
         model.addAttribute("event", event);
         model.addAttribute("checkoutItems", checkoutItems);
         model.addAttribute("totalAmount", totalAmount);
-        model.addAttribute("subscriptionForm", subscriptionForm);
         model.addAttribute("ageRanges", AgeRange.values());
         model.addAttribute("paymentMethods", PaymentMethod.values());
         return "events/checkout";

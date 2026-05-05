@@ -27,11 +27,9 @@ public class Event {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
     @Column(name = "event_date")
     private LocalDateTime eventDate;
-
-    @Column(name = "registration_deadline")
-    private LocalDateTime registrationDeadline;
 
     private Integer totalSlots;
 
@@ -65,6 +63,12 @@ public class Event {
 
     })
     private EventLocalization eventLocalization;
+
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<EventTicket> tickets = new ArrayList<>();
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<EventSubscription> subscriptions = new ArrayList<>();
 }

@@ -558,3 +558,50 @@ body {
     font-size: 14px;
     margin-bottom: 16px;
 }
+
+.ticket-card.expired {
+    opacity: 0.7;
+    background-color: #f9fafb;
+    border-style: dashed;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.status-badge-expired {
+    font-size: 11px;
+    font-weight: 800;
+    color: #ef4444;
+    background: #fef2f2;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #fee2e2;
+}
+
+.all-expired-msg {
+    background: #f3f4f6;
+    color: #9ca3af;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.ticket-card.sold-out {
+    opacity: 0.8;
+    background-color: #fffaf5;
+    border-color: #ffedd5;
+    cursor: not-allowed;
+}
+
+.status-badge-sold-out {
+    font-size: 11px;
+    font-weight: 800;
+    color: #9a3412;
+    background: #ffedd5;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #fed7aa;
+}

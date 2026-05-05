@@ -4,36 +4,52 @@
 <body>
     <header class="topbar" th:fragment="navbar(activePage)">
         <div class="topbar-left">
-            <span class="brand">Evently</span>
+            <a th:href="@{/events}" class="brand-link">
+                <span class="brand">Evently</span>
+            </a>
         </div>
 
-        <nav class="topbar-center">
-            <a th:href="@{/events}" class="nav-link" th:classappend="${activePage == 'events'} ? ' active' : ''">
-                Explorar Eventos
-            </a>
-
-            <a sec:authorize="isAuthenticated() and hasRole('ADMIN')" th:href="@{/admin/dashboard}" class="nav-link"
-                th:classappend="${activePage == 'dashboard'} ? ' active' : ''">
-
-                Painel do Organizador
-            </a>
-        </nav>
-
-
         <div class="topbar-right">
-            <a sec:authorize="isAuthenticated()" th:href="@{/user/profile}" class="nav-avatar-link"
-                th:classappend="${activePage == 'profile'} ? ' active' : ''" aria-label="Meu perfil">
-                <img th:if="${#authentication.principal.avatar != null and !#strings.isEmpty(#authentication.principal.avatar)}"
-                    th:src="${(#authentication.principal.avatar.startsWith('http') ? #authentication.principal.avatar : '/uploads/' + #authentication.principal.avatar) + '?v=' + #temporals.createNow()}"
-                    alt="Avatar do usuário" class="nav-avatar-img">
+            <nav class="nav-menu">
+                <a sec:authorize="isAuthenticated() and hasRole('ADMIN')" th:href="@{/admin/dashboard}" 
+                   class="nav-link" th:classappend="${activePage == 'dashboard'} ? ' active' : ''">
+                    <i data-lucide="layout-dashboard"></i>
+                    Painel do Administrador
+                </a>
 
-                <span
-                    th:if="${#authentication.principal.avatar == null or #strings.isEmpty(#authentication.principal.avatar)}"
-                    class="nav-avatar-placeholder"
-                    th:text="${#strings.substring(#authentication.principal.name, 0, 1).toUpperCase()}">
-                </span>
-            </a>
-            <a sec:authorize="isAnonymous()" th:href="@{/auth/login}" class="logout-link">Entrar</a>
+                <a sec:authorize="isAuthenticated() and hasAnyRole('ADMIN', 'ORGANIZADOR')" th:href="@{/events/new}" 
+                   class="nav-link" th:classappend="${activePage == 'create'} ? ' active' : ''">
+                    <i data-lucide="plus-circle"></i>
+                    Criar evento
+                </a>
+
+                <a sec:authorize="isAuthenticated() and hasAnyRole('ADMIN', 'ORGANIZADOR')" th:href="@{/admin/my-events}" 
+                   class="nav-link" th:classappend="${activePage == 'my-events'} ? ' active' : ''">
+                    <i data-lucide="calendar"></i>
+                    Meus eventos
+                </a>
+
+                <a sec:authorize="isAuthenticated()" th:href="@{/user/tickets}" 
+                   class="nav-link" th:classappend="${activePage == 'tickets'} ? ' active' : ''">
+                    <i data-lucide="ticket"></i>
+                    Meus ingressos
+                </a>
+            </nav>
+
+            <div class="user-menu-container">
+                <div sec:authorize="isAuthenticated()" class="user-profile-trigger">
+                    <a th:href="@{/user/profile}" class="nav-avatar-link" aria-label="Meu perfil">
+                        <img th:if="${#authentication.principal.avatar != null and !#strings.isEmpty(#authentication.principal.avatar)}"
+                            th:src="${(#authentication.principal.avatar.startsWith('http') ? #authentication.principal.avatar : '/uploads/' + #authentication.principal.avatar) + '?v=' + #temporals.createNow()}"
+                            alt="Avatar" class="nav-avatar-img">
+                        <span th:if="${#authentication.principal.avatar == null or #strings.isEmpty(#authentication.principal.avatar)}"
+                            class="nav-avatar-placeholder"
+                            th:text="${#strings.substring(#authentication.principal.name, 0, 1).toUpperCase()}">
+                        </span>
+                    </a>
+                </div>
+                <a sec:authorize="isAnonymous()" th:href="@{/auth/login}" class="btn-login">Entrar</a>
+            </div>
         </div>
     </header>
 </body>

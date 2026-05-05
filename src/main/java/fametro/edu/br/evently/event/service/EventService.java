@@ -45,8 +45,7 @@ public class EventService {
         List<Event> events = eventRepository.findFilteredEvents(
                 EventStatus.ATIVO,
                 StringUtils.hasText(category) ? category : null,
-                StringUtils.hasText(query) ? query : null
-        );
+                StringUtils.hasText(query) ? query : null);
 
         return events.stream()
                 .filter(e -> filterByCity(e, city))
@@ -56,13 +55,15 @@ public class EventService {
     }
 
     private boolean filterByCity(Event e, String city) {
-        if (!StringUtils.hasText(city)) return true;
+        if (!StringUtils.hasText(city))
+            return true;
         var loc = e.getEventLocalization();
         return loc != null && city.trim().equalsIgnoreCase(loc.getCity());
     }
 
     private boolean filterByDate(Event e, String date) {
-        if (!StringUtils.hasText(date)) return true;
+        if (!StringUtils.hasText(date))
+            return true;
 
         LocalDate eventDate = e.getEventDate().toLocalDate();
         LocalDate today = LocalDate.now();
@@ -86,7 +87,8 @@ public class EventService {
     }
 
     private boolean filterByPrice(Event e, String price) {
-        if (!StringUtils.hasText(price)) return true;
+        if (!StringUtils.hasText(price))
+            return true;
 
         boolean isFree = e.getTickets().stream().anyMatch(t -> t.getValue() == 0);
         boolean isPaid = e.getTickets().stream().anyMatch(t -> t.getValue() > 0);
@@ -141,10 +143,11 @@ public class EventService {
                 .category(category)
                 .organizer(organizer)
                 .eventStatus(EventStatus.ATIVO)
-                .registrationDeadline(form.getRegistrationDeadline())
                 .totalSlots(form.getTotalSlots())
                 .availableSlots(form.getTotalSlots())
                 .build();
+
+        validateTicketsQuantity(form.getEventTicket(), form.getTotalSlots());
 
         Event savedEvent = eventRepository.save(event);
 
@@ -158,18 +161,17 @@ public class EventService {
     }
 
     private List<EventTicket> createTickets(List<EventTicketDTO> dtos, Event event) {
-        List<EventTicket> tickets = dtos.stream().map(t ->
-                EventTicket.builder()
-                        .name(t.getName())
-                        .expirationDate(t.getExpirationDate())
-                        .value(t.getValue())
-                        .quantity(t.getQuantity())
-                        .event(event)
-                        .build()
-        ).toList();
+        List<EventTicket> tickets = dtos.stream().map(t -> EventTicket.builder()
+                .name(t.getName())
+                .expirationDate(t.getExpirationDate())
+                .value(t.getValue())
+                .quantity(t.getQuantity())
+                .event(event)
+                .build()).toList();
 
         return eventTicketRepository.saveAll(tickets);
     }
+
     @Transactional
     public Event update(UUID id, EventFormDTO form) {
         log.info("Atualizando evento ID: {}", id);
@@ -201,8 +203,11 @@ public class EventService {
         event.setTitle(form.getTitle());
         event.setDescription(form.getDescription());
         event.setEventDate(form.getEventDate());
-        event.setRegistrationDeadline(form.getRegistrationDeadline());
+        event.setTotalSlots(form.getTotalSlots());
 
+        validateTicketsQuantity(form.getEventTicket(), form.getTotalSlots());
+
+        // Limpar os ingressos antigos e adicionar os novos
         if (form.getEventTicket() != null) {
             event.getTickets().clear();
 
@@ -223,6 +228,13 @@ public class EventService {
         return eventRepository.save(event);
     }
 
+    @Transactional
+    public void delete(UUID id) {
+        Event event = findById(id);
+        log.info("Excluindo evento: {}", event.getTitle());
+        eventRepository.delete(event);
+    }
+
     public void archiveOrUnarchive(UUID id, EventStatus eventStatus) {
         Event event = findById(id);
         if (eventStatus == event.getEventStatus())
@@ -230,13 +242,6 @@ public class EventService {
         event.setEventStatus(eventStatus);
         eventRepository.save(event);
         log.info("Status do evento '{}' alterado", event.getTitle());
-    }
-
-    public void unarchive(UUID id) {
-        Event event = findById(id);
-        event.setEventStatus(EventStatus.ATIVO);
-        eventRepository.save(event);
-        log.info("Evento '{}' desativado", event.getTitle());
     }
 
     private String saveImage(MultipartFile file) {
@@ -254,6 +259,19 @@ public class EventService {
             return fileName;
         } catch (IOException e) {
             throw new RuntimeException("Erro ao salvar imagem", e);
+        }
+    }
+    private void validateTicketsQuantity(List<fametro.edu.br.evently.event.dto.EventTicketDTO> tickets, Integer totalSlots) {
+        if (tickets == null || tickets.isEmpty())
+            return;
+
+        int totalTicketsQuantity = tickets.stream()
+                .mapToInt(fametro.edu.br.evently.event.dto.EventTicketDTO::getQuantity)
+                .sum();
+
+        if (totalTicketsQuantity > totalSlots) {
+            throw new RuntimeException("A soma da quantidade de ingressos (" + totalTicketsQuantity +
+                    ") não pode ser maior que o número de vagas totais do evento (" + totalSlots + ").");
         }
     }
 }

@@ -14,23 +14,18 @@
     <div th:replace="~{fragments/navbar :: navbar('events')}"></div>
 
     <main class="checkout-page">
-        <!-- Stepper -->
-        <div class="checkout-stepper">
-            <div class="step step--active">
-                <span class="step-number">1</span>
-                <span>Dados do Participante</span>
-            </div>
-            <div class="step-line"></div>
-            <div class="step">
-                <span class="step-number">2</span>
-                <span>Pagamento</span>
-            </div>
+        <div class="checkout-header">
+            <h1 class="checkout-title">Formulário de Inscrição</h1>
+            <p class="checkout-subtitle">Preencha os campos abaixo para garantir sua vaga no evento.</p>
         </div>
 
         <form th:action="@{/events/subscription/join-event}" th:object="${subscriptionForm}" method="post"
             id="checkoutForm" th:data-total-amount="${totalAmount}" th:data-event-title="${event.title}">
             <input type="hidden" th:field="*{eventId}">
             <input type="hidden" th:field="*{selectedTickets}">
+            <input type="hidden" th:field="*{lastFourDigits}" id="hiddenLastFour">
+            <input type="hidden" th:field="*{cardBrand}" id="hiddenCardBrand">
+            <input type="hidden" th:field="*{paymentToken}" id="hiddenPaymentToken">
 
             <div class="checkout-grid">
                 <!-- Left Side: Forms -->
@@ -101,7 +96,7 @@
                     </section>
 
                     <!-- Payment Method -->
-                    <section class="checkout-card">
+                    <section class="checkout-card" th:if="${totalAmount > 0}">
                         <h2 class="checkout-card-title">Método de Pagamento</h2>
 
                         <div class="payment-methods-selector" role="radiogroup">
@@ -299,12 +294,22 @@
             const phoneField = document.getElementById('userPhone');
             const secondPhoneField = document.getElementById('userSecondPhone');
             const cardNumber = document.getElementById('cardNumber');
+            const cardName = document.getElementById('cardName');
             const cardExpiry = document.getElementById('cardExpiry');
             const cardCvv = document.getElementById('cardCvv');
 
-            if (cpfField) cpfField.addEventListener('input', e => e.target.value = maskCPF(e.target.value));
-            if (phoneField) phoneField.addEventListener('input', e => e.target.value = maskPhone(e.target.value));
-            if (secondPhoneField) secondPhoneField.addEventListener('input', e => e.target.value = maskPhone(e.target.value));
+            if (cpfField) {
+                cpfField.addEventListener('input', e => e.target.value = maskCPF(e.target.value));
+                if (cpfField.value) cpfField.value = maskCPF(cpfField.value);
+            }
+            if (phoneField) {
+                phoneField.addEventListener('input', e => e.target.value = maskPhone(e.target.value));
+                if (phoneField.value) phoneField.value = maskPhone(phoneField.value);
+            }
+            if (secondPhoneField) {
+                secondPhoneField.addEventListener('input', e => e.target.value = maskPhone(e.target.value));
+                if (secondPhoneField.value) secondPhoneField.value = maskPhone(secondPhoneField.value);
+            }
             if (cardNumber) cardNumber.addEventListener('input', e => e.target.value = maskCardNumber(e.target.value));
             if (cardExpiry) cardExpiry.addEventListener('input', e => e.target.value = maskExpiry(e.target.value));
             if (cardCvv) cardCvv.addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4));
@@ -314,6 +319,9 @@
             const panels = document.querySelectorAll('[data-payment-panel]');
 
             function updatePaymentPanels(selectedValue) {
+                const cardFields = [cardNumber, cardName, cardExpiry, cardCvv];
+                const isCard = selectedValue === 'CARTAO_CREDITO' || selectedValue === 'CARTAO_DEBITO';
+
                 panels.forEach(panel => {
                     const modes = panel.dataset.paymentPanel.split(',');
                     panel.classList.toggle('payment-detail--hidden', !modes.includes(selectedValue));
@@ -322,6 +330,13 @@
                 paymentCards.forEach(card => {
                     const radio = card.querySelector('input');
                     card.classList.toggle('active', radio.checked);
+                });
+
+                // Toggle required attribute
+                cardFields.forEach(field => {
+                    if (field) {
+                        field.required = isCard;
+                    }
                 });
             }
 
@@ -356,6 +371,28 @@
                 document.getElementById('boletoResult').classList.remove('payment-detail--hidden');
                 this.textContent = 'Boleto Gerado';
                 this.disabled = true;
+            });
+
+            // Form Submission Logic
+            const checkoutForm = document.getElementById('checkoutForm');
+            checkoutForm.addEventListener('submit', function (e) {
+                const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
+
+                if (selectedMethod === 'CARTAO_CREDITO' || selectedMethod === 'CARTAO_DEBITO') {
+                    const number = cardNumber.value.replace(/\s/g, '');
+                    if (number.length >= 13) {
+                        document.getElementById('hiddenLastFour').value = number.slice(-4);
+
+                        // Simple brand detection
+                        let brand = 'Desconhecido';
+                        if (number.startsWith('4')) brand = 'Visa';
+                        else if (/^5[1-5]/.test(number)) brand = 'Mastercard';
+                        else if (/^3[47]/.test(number)) brand = 'Amex';
+
+                        document.getElementById('hiddenCardBrand').value = brand;
+                        document.getElementById('hiddenPaymentToken').value = 'tok_' + Math.random().toString(36).substr(2, 9);
+                    }
+                }
             });
 
             // On Load

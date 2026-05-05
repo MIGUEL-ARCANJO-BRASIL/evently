@@ -100,7 +100,9 @@
                         Escolha uma opção</h3>
 
                     <div class="tickets-list" id="ticketsList">
-                        <div th:each="ticket : ${event.tickets}" class="ticket-card">
+                        <div th:each="ticket : ${event.tickets}" class="ticket-card" th:with="isExpired=${ticket.expirationDate != null and ticket.expirationDate.isBefore(T(java.time.LocalDate).now())},
+                                      isSoldOut=${remainingTickets.get(ticket.id) <= 0}"
+                            th:classappend="${isExpired} ? 'expired' : (${isSoldOut} ? 'sold-out' : '')">
                             <div class="ticket-info-side">
                                 <span class="ticket-name" th:text="${ticket.name}"></span>
                                 <div class="ticket-price-row">
@@ -113,29 +115,51 @@
                                 <div class="ticket-installment" th:if="${ticket.value <= 100 and ticket.value > 0}">em
                                     até 3x</div>
                                 <div class="ticket-deadline" th:if="${ticket.expirationDate != null}"
-                                    th:text="'Vendas até ' + ${#temporals.format(ticket.expirationDate, 'dd/MM/yyyy')}">
+                                    th:style="${isExpired ? 'color: #ef4444; font-weight: 700;' : ''}"
+                                    th:text="${isExpired ? 'Lote Encerrado (' + #temporals.format(ticket.expirationDate, 'dd/MM/yyyy') + ')' : 'Vendas até ' + #temporals.format(ticket.expirationDate, 'dd/MM/yyyy')}">
                                 </div>
                             </div>
 
-                            <div class="qty-selector">
+                            <div class="qty-selector" th:if="${!isExpired and !isSoldOut}">
                                 <button type="button" class="qty-btn minus" th:data-id="${ticket.id}"
                                     onclick="updateQty(this, -1)" disabled>
                                     <i data-lucide="minus" style="width: 16px; height: 16px;"></i>
                                 </button>
                                 <span class="qty-value" th:id="'qty-' + ${ticket.id}">0</span>
                                 <button type="button" class="qty-btn plus" th:data-id="${ticket.id}"
-                                    onclick="updateQty(this, 1)">
+                                    onclick="updateQty(this, 1)"
+                                    th:data-max="${remainingTickets.get(ticket.id) > 5 ? 5 : remainingTickets.get(ticket.id)}">
                                     <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
                                 </button>
                             </div>
+                            <div class="qty-selector" th:if="${isSoldOut and !isExpired}">
+                                <span class="status-badge-sold-out">ESGOTADO</span>
+                            </div>
+                            <div class="qty-selector" th:if="${isExpired}">
+                                <span class="status-badge-expired">ENCERRADO</span>
+                            </div>
                         </div>
+
+                        <p th:if="${allTicketsExpired}"
+                            style="color: #ef4444; font-size: 14px; text-align: center; padding: 15px; background: #fef2f2; border-radius: 8px; font-weight: 700;">
+                            <i data-lucide="alert-circle"
+                                style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"></i>
+                            Inscrições encerradas para este evento.
+                        </p>
+
+                        <p th:if="${allTicketsSoldOut and !allTicketsExpired}"
+                            style="color: #ef4444; font-size: 14px; text-align: center; padding: 15px; background: #fff7ed; border: 1px solid #ffedd5; border-radius: 8px; font-weight: 700;">
+                            <i data-lucide="alert-triangle"
+                                style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"></i>
+                            Ingressos esgotados.
+                        </p>
 
                         <p th:if="${#lists.isEmpty(event.tickets)}"
                             style="color: #6b7280; font-size: 14px; text-align: center; padding: 20px;">Nenhum ingresso
                             disponível no momento.</p>
                     </div>
 
-                    <div class="checkout-section">
+                    <div class="checkout-section" th:with="allExpired=${allTicketsExpired}">
                         <div th:if="${sucessoInscricao}" style="margin-bottom: 12px; color: #065f46; font-size: 14px;">
                             <span th:text="${sucessoInscricao}"></span>
                         </div>
@@ -143,13 +167,20 @@
                             <span th:text="${erroInscricao}"></span>
                         </div>
 
-                        <form th:action="@{/events/{id}/checkout(id=${event.id})}" method="post" id="checkoutForm">
+                        <form th:if="${!allTicketsExpired and !allTicketsSoldOut}"
+                            th:action="@{/events/{id}/checkout(id=${event.id})}" method="post" id="checkoutForm">
                             <input type="hidden" name="selectedTickets" id="selectedTicketsInput">
 
                             <button type="submit" id="checkoutBtn" class="btn-checkout" disabled>
                                 Selecione um ingresso
                             </button>
                         </form>
+
+                        <div th:if="${allTicketsExpired}" class="all-expired-msg">
+                            <i data-lucide="calendar-off"></i>
+                            Vendas Encerradas
+                        </div>
+
                     </div>
                 </div>
 
@@ -171,7 +202,10 @@
 
             const newVal = selections[ticketId] + delta;
 
-            if (newVal >= 0 && newVal <= 5) {
+            if (newVal >= 0) {
+                const maxVal = parseInt(btn.parentElement.querySelector('.plus').getAttribute('data-max')) || 5;
+                if (newVal > maxVal) return;
+
                 selections[ticketId] = newVal;
 
                 const qtyDisplay = document.getElementById(`qty-${ticketId}`);
@@ -180,7 +214,7 @@
                 // Update buttons state
                 const row = qtyDisplay.parentElement;
                 row.querySelector('.minus').disabled = (newVal === 0);
-                row.querySelector('.plus').disabled = (newVal === 5);
+                row.querySelector('.plus').disabled = (newVal === maxVal);
 
                 updateCheckoutButton();
             }
