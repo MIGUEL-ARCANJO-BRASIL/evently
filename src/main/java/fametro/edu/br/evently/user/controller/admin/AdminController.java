@@ -21,14 +21,15 @@ public class AdminController {
     private final CategoryService categoryService;
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
     public String dashboard(Model model, @AuthenticationPrincipal User user) {
         model.addAttribute("usuario", user.getName());
+        model.addAttribute("stats", eventService.getDashboardStats(user.getId()));
         return "admin/dashboard";
     }
 
     @GetMapping("/my-events")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
     public String events(@RequestParam(required = false) String category,
                          @RequestParam(required = false) String query,
                          Model model, @AuthenticationPrincipal User user) {

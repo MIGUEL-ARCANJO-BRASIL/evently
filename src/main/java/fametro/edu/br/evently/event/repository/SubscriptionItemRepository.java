@@ -13,4 +13,7 @@ public interface SubscriptionItemRepository extends JpaRepository<SubscriptionIt
 
     @Query("SELECT COALESCE(SUM(si.quantity), 0) FROM SubscriptionItem si WHERE si.ticket.id = :ticketId")
     Integer sumQuantityByTicketId(@Param("ticketId") UUID ticketId);
+
+    @Query("SELECT COALESCE(SUM(si.quantity), 0) FROM SubscriptionItem si WHERE si.ticket.event.organizer.id = :organizerId")
+    Long sumQuantityByOrganizerId(@Param("organizerId") UUID organizerId);
 }

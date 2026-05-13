@@ -27,7 +27,7 @@
 
         <div class="my-events-header">
             <h1 class="my-events-title">Meus Eventos</h1>
-            <a th:href="@{/events/new}" class="action-btn purple">
+            <a th:href="@{/new}" class="action-btn purple">
                 <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Novo Evento
             </a>
         </div>
@@ -74,7 +74,7 @@
                 <i data-lucide="calendar-x" style="width: 48px; height: 48px;"></i>
                 <h3>Nenhum evento criado</h3>
                 <p>Você ainda não criou nenhum evento. Que tal criar o seu primeiro agora?</p>
-                <a th:href="@{/events/new}" class="action-btn purple">Criar Novo Evento</a>
+                <a th:href="@{/new}" class="action-btn purple">Criar Novo Evento</a>
             </div>
 
             <div th:if="${#lists.isEmpty(events) and (param.query != null or param.category != null)}" class="empty-state">
@@ -133,7 +133,7 @@
                             <i data-lucide="more-vertical"></i>
                         </button>
                         <div class="options-dropdown" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10; min-width: 140px; overflow: hidden;">
-                            <a th:href="@{/events/{id}/edit(id=${event.id})}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #374151; text-decoration: none; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                            <a th:href="@{/{id}/edit(id=${event.id})}" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #374151; text-decoration: none; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
                                 <i data-lucide="edit-2" style="width: 16px; height: 16px;"></i> Editar
                             </a>
                             <button type="button" th:if="${event.eventStatus.name() == 'ATIVO'}" th:data-event-id="${event.id}" onclick="openArchiveModal(this.getAttribute('data-event-id'), 'ARQUIVADO')" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: #dc2626; text-decoration: none; font-size: 14px; background: none; border: none; width: 100%; text-align: left; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">
@@ -299,7 +299,7 @@
             const iconContainer = document.getElementById('archiveModalIcon');
             const statusInput = document.getElementById('archiveStatusInput');
 
-            form.action = `/events/${eventId}/archive`;
+            form.action = `/${eventId}/archive`;
             statusInput.value = action;
 
             if (action === 'ARQUIVADO') {
@@ -333,7 +333,7 @@
         function openDeleteModal(eventId) {
             const modal = document.getElementById('deleteModal');
             const form = document.getElementById('deleteForm');
-            form.action = `/events/${eventId}/delete`;
+            form.action = `/${eventId}/delete`;
             modal.style.display = 'flex';
         }
 

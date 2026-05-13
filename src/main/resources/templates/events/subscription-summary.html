@@ -68,7 +68,7 @@
 
             <div class="ticket-qrcode-section">
                 <div class="qr-wrapper">
-                    <img th:src="@{/events/subscription/{id}/qrcode(id=${summary.idSubscription})}" alt="QR Code"
+                    <img th:src="@{/subscription/{id}/qrcode(id=${summary.idSubscription})}" alt="QR Code"
                         width="120" height="120">
                 </div>
                 <span class="qr-scan-label">SCANEIE NA ENTRADA</span>
@@ -107,7 +107,7 @@
 
         <!-- Actions -->
         <div class="summary-actions">
-            <a th:href="@{/events/subscription/{id}/ticket/pdf(id=${summary.idSubscription})}" class="btn-download">
+            <a th:href="@{/subscription/{id}/ticket/pdf(id=${summary.idSubscription})}" class="btn-download">
                 <i data-lucide="download"></i>
                 Download Ticket (PDF)
             </a>

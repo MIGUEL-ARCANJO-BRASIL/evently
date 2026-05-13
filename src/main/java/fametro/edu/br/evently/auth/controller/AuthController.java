@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final AuthService authService;
@@ -28,8 +31,8 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login(@RequestParam(value = "erro", required = false) String erro,
-                        @RequestParam(value = "logout", required = false) String logout,
-                        Model model) {
+            @RequestParam(value = "logout", required = false) String logout,
+            Model model) {
         if (erro != null) {
             model.addAttribute("mensagemErro", "E-mail ou senha incorretos.");
         }
@@ -45,13 +48,12 @@ public class AuthController {
         return "auth/register";
     }
 
-
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute("usuarioForm") UserRegisterDTO form,
-                           BindingResult result,
-                           Model model,
-                           HttpServletRequest request,
-                           HttpServletResponse response) {
+            BindingResult result,
+            Model model,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
         if (result.hasErrors()) {
             return "auth/register";
@@ -60,11 +62,9 @@ public class AuthController {
         try {
             authService.register(form);
 
-            UsernamePasswordAuthenticationToken authRequest =
-                    UsernamePasswordAuthenticationToken.unauthenticated(
-                            form.getEmail(),
-                            form.getPassword()
-                    );
+            UsernamePasswordAuthenticationToken authRequest = UsernamePasswordAuthenticationToken.unauthenticated(
+                    form.getEmail(),
+                    form.getPassword());
 
             Authentication authentication = authenticationManager.authenticate(authRequest);
 
@@ -72,14 +72,56 @@ public class AuthController {
             context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
 
-            HttpSessionSecurityContextRepository securityContextRepository =
-                    new HttpSessionSecurityContextRepository();
-            securityContextRepository.saveContext(context, request, response);
-
-            return "redirect:/events";
-        } catch (RuntimeException e) {
+            HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+            log.info("Usuário cadastrado com sucesso e autenticado: {}", form.getEmail());
+            return "redirect:/";
+        } catch (Exception e) {
             model.addAttribute("erro", e.getMessage());
             return "auth/register";
         }
     }
+
+    @GetMapping("/forgot-password")
+    public String forgotPasswordForm() {
+        return "auth/forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(@RequestParam String email,
+            @RequestParam String cpf,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(pattern = "yyyy-MM-dd") java.time.LocalDate birthDate,
+            Model model) {
+        try {
+            String token = authService.verifyIdentityAndCreateToken(email, cpf, birthDate);
+            // Redireciona diretamente para a tela de redefinição, já que validamos a
+            // identidade aqui
+            return "redirect:/auth/reset-password?token=" + token;
+        } catch (Exception e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("email", email);
+            model.addAttribute("cpf", cpf);
+            return "auth/forgot-password";
+        }
+    }
+
+    @GetMapping("/reset-password")
+    public String resetPasswordForm(@RequestParam String token, Model model) {
+        model.addAttribute("token", token);
+        return "auth/reset-password";
+    }
+
+    @PostMapping("/reset-password")
+    public String processResetPassword(@RequestParam String token, @RequestParam String password, Model model) {
+        try {
+            authService.resetPassword(token, password);
+            model.addAttribute("mensagemSucesso", "Senha redefinida com sucesso! Agora você pode entrar.");
+            return "auth/login";
+        } catch (RuntimeException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("token", token);
+            return "auth/reset-password";
+        }
+    }
 }
+
+//

@@ -39,7 +39,6 @@ public class JoinEventFormDTO {
     @NotBlank(message = "O campo telefone não pode estar em branco")
     private String userPhone;
 
-    @NotBlank(message = "O campo telefone de emergência não pode estar em branco")
     private String userSecondPhone;
 
     @NotBlank(message = "O campo cidade não pode estar em branco")

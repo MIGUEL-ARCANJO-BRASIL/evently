@@ -14,4 +14,10 @@ public interface EventSubscriptionRepository extends JpaRepository<EventSubscrip
     Optional<EventSubscription> findByEvent_IdAndUserEmail(UUID eventId, String userEmail);
     Optional<EventSubscription> findByEvent_IdAndUserCpf(UUID eventId, String cpf);
     Optional<List<EventSubscription>> findByUserEmail(String email);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(es.paidValue), 0.0) FROM EventSubscription es WHERE es.event.organizer.id = :organizerId")
+    Double sumPaidValueByOrganizerId(@org.springframework.data.repository.query.Param("organizerId") UUID organizerId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(es) FROM EventSubscription es WHERE es.event.organizer.id = :organizerId")
+    Long countByOrganizerId(@org.springframework.data.repository.query.Param("organizerId") UUID organizerId);
 }

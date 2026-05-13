@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -28,4 +31,11 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
             ".category.name = CAST(:category AS String)) AND (CAST(:query AS String) IS NULL OR LOWER(e.title) LIKE " +
             "LOWER(CONCAT('%', CAST(:query AS String), '%'))) ORDER BY e.eventStatus DESC")
     List<Event> findFilteredEventsByOrganizer(@Param("organizerId") UUID organizerId, @Param("category") String category, @Param("query") String query);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Event e SET e.eventStatus = fametro.edu.br.evently.event.enums.EventStatus.TERMINADO " +
+            "WHERE e.eventStatus = fametro.edu.br.evently.event.enums.EventStatus.ATIVO " +
+            "AND e.eventDate < CURRENT_TIMESTAMP")
+    int updateExpiredEvents();
 }

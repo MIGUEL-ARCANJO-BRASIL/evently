@@ -39,6 +39,8 @@ public class EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final EventTicketRepository eventTicketRepository;
+    private final fametro.edu.br.evently.event.repository.EventSubscriptionRepository subscriptionRepository;
+    private final fametro.edu.br.evently.event.repository.SubscriptionItemRepository subscriptionItemRepository;
 
     public List<Event> findFiltered(String category, String query, String date, String price, String city) {
         // Busca inicial filtrada por BD (Categoria e Busca textual)
@@ -273,5 +275,37 @@ public class EventService {
             throw new RuntimeException("A soma da quantidade de ingressos (" + totalTicketsQuantity +
                     ") não pode ser maior que o número de vagas totais do evento (" + totalSlots + ").");
         }
+    }
+
+    public fametro.edu.br.evently.event.dto.DashboardStatsDTO getDashboardStats(UUID organizerId) {
+        Double totalRevenue = subscriptionRepository.sumPaidValueByOrganizerId(organizerId);
+        Long totalTicketsSold = subscriptionItemRepository.sumQuantityByOrganizerId(organizerId);
+        
+        List<Event> allEvents = eventRepository.findByOrganizerId(organizerId);
+        
+        long activeCount = allEvents.stream()
+                .filter(e -> e.getEventStatus() == EventStatus.ATIVO)
+                .count();
+        
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        List<Event> upcomingEvents = allEvents.stream()
+                .filter(e -> e.getEventStatus() == EventStatus.ATIVO && e.getEventDate().isAfter(now))
+                .sorted(java.util.Comparator.comparing(Event::getEventDate))
+                .limit(5)
+                .toList();
+
+        long upcomingCount = allEvents.stream()
+                .filter(e -> e.getEventStatus() == EventStatus.ATIVO && e.getEventDate().isAfter(now))
+                .count();
+
+        return fametro.edu.br.evently.event.dto.DashboardStatsDTO.builder()
+                .totalRevenue(totalRevenue)
+                .totalTicketsSold(totalTicketsSold)
+                .activeEventsCount(activeCount)
+                .upcomingEventsCount(upcomingCount)
+                .upcomingEvents(upcomingEvents)
+                .revenueTrend(12.5) // Mocked for now
+                .ticketsTrend(8.0)   // Mocked for now
+                .build();
     }
 }

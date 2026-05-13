@@ -65,11 +65,11 @@
                         </div>
 
                         <div class="ticket-actions">
-                            <a th:href="@{/events/subscription/{id}/summary(id=${ticket.idSubscription})}" class="btn-ticket">
+                            <a th:href="@{/subscription/{id}/summary(id=${ticket.idSubscription})}" class="btn-ticket">
                                 <i data-lucide="external-link"></i>
                                 Ver Ingresso
                             </a>
-                            <a th:href="@{/events/{id}(id=${ticket.eventId})}" class="btn-details">Detalhes do Evento</a>
+                            <a th:href="@{/{id}(id=${ticket.eventId})}" class="btn-details">Detalhes do Evento</a>
                         </div>
                     </div>
                 </article>
@@ -125,7 +125,7 @@
                         </div>
 
                         <div class="ticket-actions">
-                            <a th:href="@{/events/{id}(id=${ticket.eventId})}" class="btn-details full-width">Detalhes do Evento</a>
+                            <a th:href="@{/{id}(id=${ticket.eventId})}" class="btn-details full-width">Detalhes do Evento</a>
                         </div>
                     </div>
                 </article>

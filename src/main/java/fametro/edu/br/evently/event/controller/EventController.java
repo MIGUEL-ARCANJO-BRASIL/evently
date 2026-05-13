@@ -1,5 +1,6 @@
 package fametro.edu.br.evently.event.controller;
 
+import fametro.edu.br.evently.core.util.MaskUtils;
 import fametro.edu.br.evently.event.dto.EventFormDTO;
 import fametro.edu.br.evently.event.dto.JoinEventFormDTO;
 import fametro.edu.br.evently.event.enums.AgeRange;
@@ -27,7 +28,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/events")
+@RequestMapping("/")
 @RequiredArgsConstructor
 @Slf4j
 public class EventController {
@@ -37,25 +38,30 @@ public class EventController {
     private final UserRepository userRepository;
     private final SubscriptionItemRepository subscriptionItemRepository;
 
-    @GetMapping
-    public String list(@RequestParam(required = false) String category, 
-                       @RequestParam(required = false) String query, 
-                       @RequestParam(required = false) String date,
-                       @RequestParam(required = false) String price,
-                       @RequestParam(required = false) String city,
-                       Model model) {
+    @GetMapping("/")
+    public String list(@RequestParam(required = false) String category,
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) String price,
+            @RequestParam(required = false) String city,
+            Model model) {
         List<Event> lista = eventService.findFiltered(category, query, date, price, city);
         model.addAttribute("events", lista);
         model.addAttribute("categories", categoryService.findAll());
         return "events/home";
     }
 
+    @GetMapping("/events")
+    public String listRedirect() {
+        return "redirect:/";
+    }
+
     @GetMapping("/{id}")
     public String detail(@PathVariable UUID id,
-                         @AuthenticationPrincipal User user,
-                         Model model) {
+            @AuthenticationPrincipal User user,
+            Model model) {
         Event event = eventService.findById(id);
-        
+
         Map<UUID, Integer> remainingTickets = new HashMap<>();
         for (var ticket : event.getTickets()) {
             Integer sold = subscriptionItemRepository.sumQuantityByTicketId(ticket.getId());
@@ -64,10 +70,10 @@ public class EventController {
 
         boolean allTicketsExpired = !event.getTickets().isEmpty() && event.getTickets().stream()
                 .allMatch(t -> t.getExpirationDate() != null && t.getExpirationDate().isBefore(LocalDate.now()));
-        
+
         boolean allTicketsSoldOut = !event.getTickets().isEmpty() && event.getTickets().stream()
                 .allMatch(t -> remainingTickets.get(t.getId()) <= 0);
-        
+
         model.addAttribute("event", event);
         model.addAttribute("allTicketsExpired", allTicketsExpired);
         model.addAttribute("allTicketsSoldOut", allTicketsSoldOut);
@@ -77,19 +83,19 @@ public class EventController {
 
     @PostMapping("/{id}/checkout")
     public String checkout(@PathVariable UUID id,
-                           @RequestParam(required = false) String selectedTickets,
-                           @AuthenticationPrincipal User user,
-                           RedirectAttributes redirectAttributes,
-                           Model model) {
+            @RequestParam(required = false) String selectedTickets,
+            @AuthenticationPrincipal User user,
+            RedirectAttributes redirectAttributes,
+            Model model) {
         return renderCheckout(id, selectedTickets, user, redirectAttributes, model);
     }
 
     @GetMapping("/{id}/checkout")
     public String checkoutPage(@PathVariable UUID id,
-                               @RequestParam(required = false) String selectedTickets,
-                               @AuthenticationPrincipal User user,
-                               RedirectAttributes redirectAttributes,
-                               Model model) {
+            @RequestParam(required = false) String selectedTickets,
+            @AuthenticationPrincipal User user,
+            RedirectAttributes redirectAttributes,
+            Model model) {
         return renderCheckout(id, selectedTickets, user, redirectAttributes, model);
     }
 
@@ -103,10 +109,10 @@ public class EventController {
     @PostMapping("/new")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
     public String createEvent(@Valid @ModelAttribute("eventForm") EventFormDTO form,
-                              BindingResult result,
-                              @AuthenticationPrincipal User organizer,
-                              Model model,
-                              RedirectAttributes redirectAttributes) {
+            BindingResult result,
+            @AuthenticationPrincipal User organizer,
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
             model.addAttribute("categories", categoryService.findAll());
@@ -116,9 +122,8 @@ public class EventController {
         eventService.create(form, organizer);
 
         redirectAttributes.addFlashAttribute("sucesso", "Evento criado com sucesso!");
-        return "redirect:/events";
+        return "redirect:/";
     }
-
 
     @GetMapping("/{id}/edit")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
@@ -148,13 +153,13 @@ public class EventController {
 
         if (event.getTickets() != null && !event.getTickets().isEmpty()) {
             form.setEventTicket(event.getTickets().stream()
-                .map(t -> new fametro.edu.br.evently.event.dto.EventTicketDTO(
-                    event.getId(), 
-                    t.getName(), 
-                    t.getValue(), 
-                    t.getExpirationDate(), 
-                    t.getQuantity()))
-                .toList());
+                    .map(t -> new fametro.edu.br.evently.event.dto.EventTicketDTO(
+                            event.getId(),
+                            t.getName(),
+                            t.getValue(),
+                            t.getExpirationDate(),
+                            t.getQuantity()))
+                    .toList());
         }
 
         model.addAttribute("event", event); // Para usar o ID no th:action
@@ -167,11 +172,11 @@ public class EventController {
     @PostMapping("/{id}/edit")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
     public String update(@PathVariable UUID id,
-                         @Valid @ModelAttribute("eventForm") EventFormDTO form,
-                         BindingResult result,
-                         @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
-                         Model model,
-                         RedirectAttributes redirectAttributes) {
+            @Valid @ModelAttribute("eventForm") EventFormDTO form,
+            BindingResult result,
+            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
         if (result.hasErrors()) {
             model.addAttribute("categories", categoryService.findAll());
@@ -190,14 +195,16 @@ public class EventController {
 
         eventService.update(id, form);
         redirectAttributes.addFlashAttribute("sucesso", "Evento atualizado!");
-        return "redirect:/events";
+        return "redirect:/";
     }
 
     @PostMapping("/{id}/archive")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
-    public String archive(@PathVariable UUID id, @RequestParam fametro.edu.br.evently.event.enums.EventStatus status, RedirectAttributes redirectAttributes) {
+    public String archive(@PathVariable UUID id, @RequestParam fametro.edu.br.evently.event.enums.EventStatus status,
+            RedirectAttributes redirectAttributes) {
         eventService.archiveOrUnarchive(id, status);
-        String msg = status == fametro.edu.br.evently.event.enums.EventStatus.ARQUIVADO ? "Evento Arquivado!" : "Evento Desarquivado!";
+        String msg = status == fametro.edu.br.evently.event.enums.EventStatus.ARQUIVADO ? "Evento Arquivado!"
+                : "Evento Desarquivado!";
         redirectAttributes.addFlashAttribute("sucesso", msg);
         return "redirect:/admin/my-events";
     }
@@ -228,8 +235,8 @@ public class EventController {
                     userSecondName = nameParts[1];
                 }
             }
-            userPhone = user.getPhone() != null ? user.getPhone() : "";
-            userCpf = user.getCpf() != null ? user.getCpf() : "";
+            userPhone = MaskUtils.formatPhone(user.getPhone());
+            userCpf = MaskUtils.formatCpf(user.getCpf());
             userEmail = user.getEmail() != null ? user.getEmail() : "";
         }
 
@@ -246,16 +253,16 @@ public class EventController {
     }
 
     private String renderCheckout(UUID eventId,
-                                  String selectedTickets,
-                                  User user,
-                                  RedirectAttributes redirectAttributes,
-                                  Model model) {
+            String selectedTickets,
+            User user,
+            RedirectAttributes redirectAttributes,
+            Model model) {
         Event event = eventService.findById(eventId);
         List<CheckoutItem> checkoutItems = buildCheckoutItems(event, selectedTickets);
 
         if (checkoutItems.isEmpty()) {
             redirectAttributes.addFlashAttribute("erroInscricao", "Selecione ao menos um ingresso.");
-            return "redirect:/events/" + eventId;
+            return "redirect:/" + eventId;
         }
 
         double totalAmount = checkoutItems.stream()
@@ -295,8 +302,7 @@ public class EventController {
                 .map(ticket -> new CheckoutItem(
                         ticket.getName(),
                         quantityByTicket.get(ticket.getId()),
-                        ticket.getValue() != null ? ticket.getValue() : 0.0
-                ))
+                        ticket.getValue() != null ? ticket.getValue() : 0.0))
                 .toList();
     }
 
@@ -316,6 +322,7 @@ public class EventController {
         }
     }
 
-    private record CheckoutItem(String ticketName, int quantity, double unitPrice) {}
+    private record CheckoutItem(String ticketName, int quantity, double unitPrice) {
+    }
 
 }

@@ -25,7 +25,7 @@
         <p>Atualize as informações do seu evento para manter seus participantes informados.</p>
     </header>
 
-    <form th:action="@{/events/{id}/edit(id=${event.id})}" method="post" th:object="${eventForm}"
+    <form th:action="@{/{id}/edit(id=${event.id})}" method="post" th:object="${eventForm}"
           enctype="multipart/form-data">
         <div class="edit-grid">
 

@@ -19,7 +19,7 @@
 
             <div class="filters-row">
                 <div class="search-input-wrapper">
-                    <form action="/events" method="get" class="search-box" id="mainSearchForm">
+                    <form action="/" method="get" class="search-box" id="mainSearchForm">
                         <input type="hidden" name="category" th:if="${param.category != null}"
                             th:value="${param.category}">
                         <input type="hidden" name="date" th:if="${param.date != null}" th:value="${param.date}">
@@ -48,12 +48,12 @@
                         <div class="dropdown-section">
                             <span class="dropdown-label">Principais Capitais</span>
                             <div class="dropdown-options" id="cityOptions">
-                                <a th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date}, price=${param.price})}"
+                                <a th:href="@{/(category=${param.category}, query=${param.query}, date=${param.date}, price=${param.price})}"
                                     class="dropdown-option city-option"
                                     th:classappend="${param.city == null} ? 'active' : ''" data-city="">Qualquer
                                     lugar</a>
                                 <a th:each="cap : ${ {'Belo Horizonte', 'Brasília', 'Curitiba', 'Fortaleza', 'Manaus', 'Porto Alegre', 'Recife', 'Rio de Janeiro', 'Salvador', 'São Paulo'} }"
-                                    th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date}, price=${param.price}, city=${cap})}"
+                                    th:href="@{/(category=${param.category}, query=${param.query}, date=${param.date}, price=${param.price}, city=${cap})}"
                                     class="dropdown-option city-option"
                                     th:classappend="${param.city != null and param.city[0] == cap} ? 'active' : ''"
                                     th:text="${cap}" th:data-city="${cap}"></a>
@@ -76,16 +76,16 @@
                         <div class="dropdown-section">
                             <span class="dropdown-label">Sugestões</span>
                             <div class="dropdown-options">
-                                <a th:href="@{/events(category=${param.category}, query=${param.query}, price=${param.price})}"
+                                <a th:href="@{/(category=${param.category}, query=${param.query}, price=${param.price})}"
                                     class="dropdown-option"
                                     th:classappend="${param.date == null} ? 'active' : ''">Qualquer data</a>
-                                <a th:href="@{/events(category=${param.category}, query=${param.query}, date='hoje', price=${param.price})}"
+                                <a th:href="@{/(category=${param.category}, query=${param.query}, date='hoje', price=${param.price})}"
                                     class="dropdown-option"
                                     th:classappend="${param.date != null and param.date[0] == 'hoje'} ? 'active' : ''">Hoje</a>
-                                <a th:href="@{/events(category=${param.category}, query=${param.query}, date='amanha', price=${param.price})}"
+                                <a th:href="@{/(category=${param.category}, query=${param.query}, date='amanha', price=${param.price})}"
                                     class="dropdown-option"
                                     th:classappend="${param.date != null and param.date[0] == 'amanha'} ? 'active' : ''">Amanhã</a>
-                                <a th:href="@{/events(category=${param.category}, query=${param.query}, date='fim-de-semana', price=${param.price})}"
+                                <a th:href="@{/(category=${param.category}, query=${param.query}, date='fim-de-semana', price=${param.price})}"
                                     class="dropdown-option"
                                     th:classappend="${param.date != null and param.date[0] == 'fim-de-semana'} ? 'active' : ''">Fim
                                     de Semana</a>
@@ -112,13 +112,13 @@
 
                     <div class="filter-dropdown-menu" id="priceDropdownMenu">
                         <div class="dropdown-options">
-                            <a th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date})}"
+                            <a th:href="@{/(category=${param.category}, query=${param.query}, date=${param.date})}"
                                 class="dropdown-option" th:classappend="${param.price == null} ? 'active' : ''">Qualquer
                                 preço</a>
-                            <a th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date}, price='gratis')}"
+                            <a th:href="@{/(category=${param.category}, query=${param.query}, date=${param.date}, price='gratis')}"
                                 class="dropdown-option"
                                 th:classappend="${param.price != null and param.price[0] == 'gratis'} ? 'active' : ''">Grátis</a>
-                            <a th:href="@{/events(category=${param.category}, query=${param.query}, date=${param.date}, price='pago')}"
+                            <a th:href="@{/(category=${param.category}, query=${param.query}, date=${param.date}, price='pago')}"
                                 class="dropdown-option"
                                 th:classappend="${param.price != null and param.price[0] == 'pago'} ? 'active' : ''">Pago</a>
                         </div>
@@ -128,19 +128,19 @@
             <section class="collections-section">
                 <div class="section-header">
                     <h2 class="section-title">Explore nossas coleções</h2>
-                    <a th:href="@{/events}" class="view-all">Ver tudo</a>
+                    <a th:href="@{/}" class="view-all">Ver tudo</a>
                 </div>
 
                 <div class="slider-container">
                     <div class="category-slider" id="categorySlider">
-                        <a th:href="@{/events(query=${param.query}, date=${param.date}, price=${param.price})}"
+                        <a th:href="@{/(query=${param.query}, date=${param.date}, price=${param.price})}"
                             class="category-card" th:classappend="${param.category == null} ? 'active' : ''">
                             <i data-lucide="layout-grid"></i>
                             <span>Tudo</span>
                         </a>
 
                         <a th:each="cat : ${categories}"
-                            th:href="@{/events(category=${cat.name}, query=${param.query}, date=${param.date}, price=${param.price})}"
+                            th:href="@{/(category=${cat.name}, query=${param.query}, date=${param.date}, price=${param.price})}"
                             class="category-card"
                             th:classappend="${param.category != null and param.category[0] == cat.name} ? 'active' : ''"
                             th:data-category-name="${cat.name}">
@@ -203,7 +203,7 @@
                         </ul>
 
                         <div class="event-actions">
-                            <a th:href="@{/events/{id}(id=${event.id})}" class="btn-details">Ver Detalhes</a>
+                            <a th:href="@{/{id}(id=${event.id})}" class="btn-details">Ver Detalhes</a>
                         </div>
                     </div>
                 </article>

@@ -19,7 +19,7 @@
             <p class="checkout-subtitle">Preencha os campos abaixo para garantir sua vaga no evento.</p>
         </div>
 
-        <form th:action="@{/events/subscription/join-event}" th:object="${subscriptionForm}" method="post"
+        <form th:action="@{/subscription/join-event}" th:object="${subscriptionForm}" method="post"
             id="checkoutForm" th:data-total-amount="${totalAmount}" th:data-event-title="${event.title}">
             <input type="hidden" th:field="*{eventId}">
             <input type="hidden" th:field="*{selectedTickets}">
@@ -75,7 +75,7 @@
                             <div class="form-field">
                                 <label for="userSecondPhone">Contato de Emergência</label>
                                 <input type="text" th:field="*{userSecondPhone}" placeholder="(00) 00000-0000"
-                                    id="userSecondPhone" required>
+                                    id="userSecondPhone">
                             </div>
 
                             <div class="form-field">
@@ -192,7 +192,7 @@
 
                     <!-- Actions -->
                     <div class="checkout-actions">
-                        <a th:href="@{/events/{id}(id=${event.id})}" class="btn-back">
+                        <a th:href="@{/{id}(id=${event.id})}" class="btn-back">
                             <i data-lucide="arrow-left"></i>
                             Voltar
                         </a>

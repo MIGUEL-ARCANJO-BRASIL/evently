@@ -1,5 +1,6 @@
 package fametro.edu.br.evently.user.controller;
 
+import fametro.edu.br.evently.core.util.MaskUtils;
 import fametro.edu.br.evently.user.dto.UserEditInfosForm;
 import fametro.edu.br.evently.user.model.User;
 import fametro.edu.br.evently.user.service.UserService;
@@ -39,8 +40,8 @@ public class UserController {
             model.addAttribute("userForm", new UserEditInfosForm(
                     user.getName(),
                     user.getEmail(),
-                    user.getPhone(),
-                    user.getCpf(),
+                    MaskUtils.formatPhone(user.getPhone()),
+                    MaskUtils.formatCpf(user.getCpf()),
                     user.getBirthDate()
             ));
         }
@@ -70,12 +71,12 @@ public class UserController {
         try {
             userService.updateUserInfos(user.getId(), form, avatarFile);
 
-            User updatedUser = userService.findByEmail(user.getEmail());
+            User updatedUser = userService.findById(user.getId());
 
             UsernamePasswordAuthenticationToken newAuth =
                     new UsernamePasswordAuthenticationToken(
                             updatedUser,
-                            userDetails.getPassword(),
+                            updatedUser.getPassword(),
                             updatedUser.getAuthorities()
                     );
 

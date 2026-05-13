@@ -6,6 +6,7 @@
     <link rel="stylesheet" th:href="@{/css/navbar.css}">
     <link rel="stylesheet" th:href="@{/css/profile.css}">
     <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -157,7 +158,9 @@
     <div th:replace="~{fragments/footer :: footer}"></div>
 </div>
 
-<script>
+<script th:inline="javascript">
+    const initialEditMode = /*[[${editMode ?: false}]]*/ false;
+    lucide.createIcons();
     const inputCpf = document.getElementById('cpf');
     const inputPhone = document.getElementById('phone');
     const avatarFile = document.getElementById('avatarFile');
@@ -282,7 +285,7 @@
         e.target.value = value;
     });
 
-    setEditMode(false);
+    setEditMode(initialEditMode);
 </script>
 </body>
 </html>

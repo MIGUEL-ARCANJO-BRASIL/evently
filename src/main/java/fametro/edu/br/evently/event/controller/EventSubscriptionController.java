@@ -17,26 +17,33 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/events/subscription")
+@RequestMapping("/subscription")
 @RequiredArgsConstructor
 public class EventSubscriptionController {
     private final EventSubscriptionService subscriptionService;
 
     @PostMapping("/join-event")
     public String joinEvent(@Valid @ModelAttribute("subscriptionForm") JoinEventFormDTO form,
-                            BindingResult bindingResult,
-                            RedirectAttributes redirectAttributes) {
-        String redirectUrl = form.getEventId() != null ? "redirect:/events/" + form.getEventId() : "redirect:/events";
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+        String redirectUrl = form.getEventId() != null ? "redirect:/" + form.getEventId() : "redirect:/";
         String checkoutRedirectUrl = redirectUrl;
 
         if (form.getEventId() != null && form.getSelectedTickets() != null && !form.getSelectedTickets().isBlank()) {
-            checkoutRedirectUrl = "redirect:/events/" + form.getEventId() + "/checkout?selectedTickets=" + form.getSelectedTickets();
+            checkoutRedirectUrl = "redirect:/" + form.getEventId() + "/checkout?selectedTickets="
+                    + form.getSelectedTickets();
         }
 
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("erroInscricao", "Preencha corretamente os campos obrigatórios.");
+            List<String> errors = bindingResult.getFieldErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+
+            redirectAttributes.addFlashAttribute("erroInscricao",
+                    "Existem erros no formulário: " + String.join(", ", errors));
             redirectAttributes.addFlashAttribute("subscriptionForm", form);
             return checkoutRedirectUrl;
         }
@@ -44,7 +51,7 @@ public class EventSubscriptionController {
         try {
             EventSubscriptionResponseDTO subscription = this.subscriptionService.joinEvent(form);
             redirectAttributes.addFlashAttribute("sucessoInscricao", "Inscrição realizada com sucesso!");
-            return "redirect:/events/subscription/" + subscription.getId() + "/summary";
+            return "redirect:/subscription/" + subscription.getId() + "/summary";
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("erroInscricao", e.getMessage());
             redirectAttributes.addFlashAttribute("subscriptionForm", form);

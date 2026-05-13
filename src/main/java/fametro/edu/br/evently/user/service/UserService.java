@@ -1,11 +1,13 @@
 package fametro.edu.br.evently.user.service;
 
+import fametro.edu.br.evently.core.util.MaskUtils;
 import fametro.edu.br.evently.user.dto.UserEditInfosForm;
 import fametro.edu.br.evently.user.model.User;
 import fametro.edu.br.evently.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,14 +32,20 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     }
 
+    public User findById(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    }
+
+    @Transactional
     public void updateUserInfos(UUID userId, UserEditInfosForm form, MultipartFile avatarFile) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         user.setName(form.name());
         user.setEmail(form.email());
-        user.setPhone(form.phone());
-        user.setCpf(form.cpf());
+        user.setPhone(MaskUtils.unmask(form.phone()));
+        user.setCpf(MaskUtils.unmask(form.cpf()));
         user.setBirthDate(form.birthDate());
 
         if (avatarFile != null && !avatarFile.isEmpty()) {

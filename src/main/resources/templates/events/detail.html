@@ -168,7 +168,7 @@
                         </div>
 
                         <form th:if="${!allTicketsExpired and !allTicketsSoldOut}"
-                            th:action="@{/events/{id}/checkout(id=${event.id})}" method="post" id="checkoutForm">
+                            th:action="@{/{id}/checkout(id=${event.id})}" method="post" id="checkoutForm">
                             <input type="hidden" name="selectedTickets" id="selectedTicketsInput">
 
                             <button type="submit" id="checkoutBtn" class="btn-checkout" disabled>

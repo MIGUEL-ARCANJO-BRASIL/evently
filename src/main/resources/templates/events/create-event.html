@@ -41,7 +41,7 @@
             </aside>
 
             <section class="create-event-card">
-                <form id="createEventForm" th:action="@{/events/new}" method="post" th:object="${eventForm}"
+                <form id="createEventForm" th:action="@{/new}" method="post" th:object="${eventForm}"
                     enctype="multipart/form-data">
 
                     <div class="form-group full">
@@ -176,7 +176,7 @@
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn-primary">Criar Evento</button>
-                        <a th:href="@{/events}" class="btn-secondary">Cancelar</a>
+                        <a th:href="@{/}" class="btn-secondary">Cancelar</a>
                     </div>
                 </form>
             </section>

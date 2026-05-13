@@ -34,11 +34,11 @@ public class SecurityConfig {
                                 "/uploads/**",
                                 "/error"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/events", "/events/*").permitAll()
-                        .requestMatchers("/events/subscription/*").permitAll()
-                        .requestMatchers("/events/*/checkout").permitAll()
-                        .requestMatchers("/events/new").hasRole("ADMIN")
-                        .requestMatchers("/events/*/edit", "/events/*/archive").hasAnyRole("ADMIN", "ORGANIZADOR")
+                        .requestMatchers(HttpMethod.GET, "/", "/{id}").permitAll()
+                        .requestMatchers("/subscription/*").permitAll()
+                        .requestMatchers("/{id}/checkout").permitAll()
+                        .requestMatchers("/new").hasAnyRole("ADMIN", "ORGANIZADOR")
+                        .requestMatchers("/{id}/edit", "/{id}/archive").hasAnyRole("ADMIN", "ORGANIZADOR")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/organizador/**").hasAnyRole("ADMIN", "ORGANIZADOR")
                         .anyRequest().authenticated()
