@@ -15,4 +15,15 @@ public class CategoryService {
     public List<Category> findAll() {
         return this.categoryRepository.findAll();
     }
+
+    public fametro.edu.br.evently.event.dto.CategoryResponseDTO createCategory(String nameCategory) {
+        this.categoryRepository.findbyName(nameCategory).ifPresent(
+                c -> {
+                    throw new RuntimeException("Categoria com esse nome já existe");
+                }
+        );
+        var category = Category.builder().name(nameCategory).build();
+        var savedCategory = this.categoryRepository.save(category);
+        return new fametro.edu.br.evently.event.dto.CategoryResponseDTO(savedCategory.getId(), savedCategory.getName());
+    }
 }

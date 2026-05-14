@@ -56,7 +56,7 @@ public class EventController {
         return "redirect:/";
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}")
     public String detail(@PathVariable UUID id,
             @AuthenticationPrincipal User user,
             Model model) {
@@ -81,7 +81,7 @@ public class EventController {
         return "events/detail";
     }
 
-    @PostMapping("/{id}/checkout")
+    @PostMapping("/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}/checkout")
     public String checkout(@PathVariable UUID id,
             @RequestParam(required = false) String selectedTickets,
             @AuthenticationPrincipal User user,
@@ -90,7 +90,7 @@ public class EventController {
         return renderCheckout(id, selectedTickets, user, redirectAttributes, model);
     }
 
-    @GetMapping("/{id}/checkout")
+    @GetMapping("/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}/checkout")
     public String checkoutPage(@PathVariable UUID id,
             @RequestParam(required = false) String selectedTickets,
             @AuthenticationPrincipal User user,
@@ -125,7 +125,7 @@ public class EventController {
         return "redirect:/";
     }
 
-    @GetMapping("/{id}/edit")
+    @GetMapping("/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}/edit")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
     public String editForm(@PathVariable UUID id, Model model) {
         Event event = eventService.findById(id);
@@ -169,7 +169,7 @@ public class EventController {
         return "events/form-edit";
     }
 
-    @PostMapping("/{id}/edit")
+    @PostMapping("/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}/edit")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
     public String update(@PathVariable UUID id,
             @Valid @ModelAttribute("eventForm") EventFormDTO form,
@@ -198,7 +198,7 @@ public class EventController {
         return "redirect:/";
     }
 
-    @PostMapping("/{id}/archive")
+    @PostMapping("/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}/archive")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
     public String archive(@PathVariable UUID id, @RequestParam fametro.edu.br.evently.event.enums.EventStatus status,
             RedirectAttributes redirectAttributes) {
@@ -209,7 +209,7 @@ public class EventController {
         return "redirect:/admin/my-events";
     }
 
-    @PostMapping("/{id}/delete")
+    @PostMapping("/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}/delete")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZADOR')")
     public String delete(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
         eventService.delete(id);

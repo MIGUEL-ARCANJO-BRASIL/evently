@@ -1,5 +1,6 @@
 package fametro.edu.br.evently.event.service;
 
+import fametro.edu.br.evently.event.dto.CategoryResponseDTO;
 import fametro.edu.br.evently.event.dto.EventFormDTO;
 import fametro.edu.br.evently.event.dto.EventTicketDTO;
 import fametro.edu.br.evently.event.enums.EventStatus;
@@ -7,11 +8,8 @@ import fametro.edu.br.evently.event.model.Category;
 import fametro.edu.br.evently.event.model.Event;
 import fametro.edu.br.evently.event.model.EventLocalization;
 import fametro.edu.br.evently.event.model.EventTicket;
-import fametro.edu.br.evently.event.repository.CategoryRepository;
-import fametro.edu.br.evently.event.repository.EventRepository;
-import fametro.edu.br.evently.event.repository.EventTicketRepository;
+import fametro.edu.br.evently.event.repository.*;
 import fametro.edu.br.evently.user.model.User;
-import fametro.edu.br.evently.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +37,8 @@ public class EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final EventTicketRepository eventTicketRepository;
-    private final fametro.edu.br.evently.event.repository.EventSubscriptionRepository subscriptionRepository;
-    private final fametro.edu.br.evently.event.repository.SubscriptionItemRepository subscriptionItemRepository;
+    private final EventSubscriptionRepository subscriptionRepository;
+    private final SubscriptionItemRepository subscriptionItemRepository;
 
     public List<Event> findFiltered(String category, String query, String date, String price, String city) {
         // Busca inicial filtrada por BD (Categoria e Busca textual)
@@ -174,6 +172,17 @@ public class EventService {
         return eventTicketRepository.saveAll(tickets);
     }
 
+    public CategoryResponseDTO createCategory(String nameCategory) {
+        this.categoryRepository.findbyName(nameCategory).ifPresent(
+                c -> {
+                    throw new RuntimeException("Categoria com esse nome já existe");
+                }
+        );
+        var category = Category.builder().name(nameCategory).build();
+        var savedCategory = this.categoryRepository.save(category);
+        return new CategoryResponseDTO(savedCategory.getId(), savedCategory.getName());
+    }
+
     @Transactional
     public Event update(UUID id, EventFormDTO form) {
         log.info("Atualizando evento ID: {}", id);
@@ -263,6 +272,7 @@ public class EventService {
             throw new RuntimeException("Erro ao salvar imagem", e);
         }
     }
+
     private void validateTicketsQuantity(List<fametro.edu.br.evently.event.dto.EventTicketDTO> tickets, Integer totalSlots) {
         if (tickets == null || tickets.isEmpty())
             return;
@@ -280,13 +290,13 @@ public class EventService {
     public fametro.edu.br.evently.event.dto.DashboardStatsDTO getDashboardStats(UUID organizerId) {
         Double totalRevenue = subscriptionRepository.sumPaidValueByOrganizerId(organizerId);
         Long totalTicketsSold = subscriptionItemRepository.sumQuantityByOrganizerId(organizerId);
-        
+
         List<Event> allEvents = eventRepository.findByOrganizerId(organizerId);
-        
+
         long activeCount = allEvents.stream()
                 .filter(e -> e.getEventStatus() == EventStatus.ATIVO)
                 .count();
-        
+
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
         List<Event> upcomingEvents = allEvents.stream()
                 .filter(e -> e.getEventStatus() == EventStatus.ATIVO && e.getEventDate().isAfter(now))
