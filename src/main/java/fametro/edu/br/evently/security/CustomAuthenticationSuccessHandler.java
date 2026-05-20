@@ -17,6 +17,15 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
 
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof fametro.edu.br.evently.user.model.User) {
+            fametro.edu.br.evently.user.model.User user = (fametro.edu.br.evently.user.model.User) principal;
+            if (user.getCpf() == null || user.getPhone() == null) {
+                response.sendRedirect("/auth/complete-profile");
+                return;
+            }
+        }
+
         String role = authentication.getAuthorities()
                 .stream()
                 .findFirst()
@@ -31,4 +40,5 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             case "ROLE_MEMBRO"       -> response.sendRedirect("/events");
             default                  -> response.sendRedirect("/");
         }
-    }}
+    }
+}

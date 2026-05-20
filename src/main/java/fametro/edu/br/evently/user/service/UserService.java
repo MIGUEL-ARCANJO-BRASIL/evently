@@ -56,6 +56,18 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void completeProfile(UUID userId, fametro.edu.br.evently.auth.dto.CompleteProfileDTO dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        user.setCpf(MaskUtils.unmask(dto.getCpf()));
+        user.setPhone(MaskUtils.unmask(dto.getPhone()));
+        user.setBirthDate(dto.getBirthDate());
+
+        userRepository.save(user);
+    }
+
     private String saveAvatar(MultipartFile file) {
         try {
             String originalName = file.getOriginalFilename();

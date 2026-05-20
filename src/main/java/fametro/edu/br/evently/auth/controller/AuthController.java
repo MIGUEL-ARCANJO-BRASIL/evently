@@ -27,6 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuthController {
 
     private final AuthService authService;
+    private final fametro.edu.br.evently.user.service.UserService userService;
     private final AuthenticationManager authenticationManager;
 
     @GetMapping("/login")
@@ -120,6 +121,50 @@ public class AuthController {
             model.addAttribute("mensagemErro", e.getMessage());
             model.addAttribute("token", token);
             return "auth/reset-password";
+        }
+    }
+
+    @GetMapping("/complete-profile")
+    public String completeProfileForm(Model model, @org.springframework.security.core.annotation.AuthenticationPrincipal fametro.edu.br.evently.user.model.User user) {
+        if (user == null) {
+            return "redirect:/auth/login";
+        }
+        if (user.getCpf() != null && user.getPhone() != null) {
+            return "redirect:/"; // Já completou
+        }
+        model.addAttribute("profileForm", new fametro.edu.br.evently.auth.dto.CompleteProfileDTO());
+        return "auth/complete-profile";
+    }
+
+    @PostMapping("/complete-profile")
+    public String completeProfile(
+            @Valid @ModelAttribute("profileForm") fametro.edu.br.evently.auth.dto.CompleteProfileDTO form,
+            BindingResult result,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal fametro.edu.br.evently.user.model.User user,
+            Model model) {
+        
+        if (user == null) {
+            return "redirect:/auth/login";
+        }
+        
+        if (result.hasErrors()) {
+            return "auth/complete-profile";
+        }
+
+        try {
+            userService.completeProfile(user.getId(), form);
+            
+            // Redireciona com base na role, usando a mesma lógica do SuccessHandler
+            String role = user.getAuthorities().stream().findFirst().map(org.springframework.security.core.GrantedAuthority::getAuthority).orElse("");
+            return switch (role) {
+                case "ROLE_ADMIN" -> "redirect:/events";
+                case "ROLE_ORGANIZADOR" -> "redirect:/organizador/dashboard";
+                case "ROLE_MEMBRO" -> "redirect:/events";
+                default -> "redirect:/";
+            };
+        } catch (Exception e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            return "auth/complete-profile";
         }
     }
 }

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Evently — Completar Cadastro</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+<div class="page">
+    <div class="card">
+        <div class="icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </div>
+
+        <h1 class="brand">Quase lá!</h1>
+        <p class="subtitle">Precisamos de mais algumas informações para completar seu perfil.</p>
+
+        <div th:if="${mensagemErro}" class="alert alert-erro" th:text="${mensagemErro}"></div>
+
+        <form th:action="@{/auth/complete-profile}" method="post" th:object="${profileForm}">
+            
+            <div class="field">
+                <label for="phone">Telefone</label>
+                <div class="field-wrap">
+                    <input type="tel"
+                           id="phone"
+                           th:field="*{phone}"
+                           placeholder="(92) 99999-9999"
+                           autocomplete="tel"
+                           maxlength="15"
+                           required/>
+                </div>
+                <span class="field-erro"
+                      th:if="${#fields.hasErrors('phone')}"
+                      th:errors="*{phone}"></span>
+            </div>
+
+            <div class="field">
+                <label for="cpf">CPF</label>
+                <div class="field-wrap">
+                    <input type="text"
+                           id="cpf"
+                           th:field="*{cpf}"
+                           placeholder="000.000.000-00"
+                           maxlength="14"
+                           required/>
+                </div>
+                <span class="field-erro"
+                      th:if="${#fields.hasErrors('cpf')}"
+                      th:errors="*{cpf}"></span>
+            </div>
+
+            <div class="field">
+                <label for="birthDate">Data de Nascimento</label>
+                <div class="field-wrap">
+                    <input type="date"
+                           id="birthDate"
+                           th:field="*{birthDate}"
+                           autocomplete="bday"
+                           required/>
+                </div>
+                <span class="field-erro"
+                      th:if="${#fields.hasErrors('birthDate')}"
+                      th:errors="*{birthDate}"></span>
+            </div>
+
+            <button type="submit" class="btn">Salvar Informações</button>
+        </form>
+
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</div>
+
+<script>
+    const inputCpf = document.getElementById('cpf');
+    const inputPhone = document.getElementById('phone');
+
+    inputCpf.addEventListener('input', (e) => {
+        let value = e.target.value;
+        value = value.replace(/\D/g, "");
+        value = value.slice(0, 11);
+
+        if (value.length > 9) {
+            value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2}).*/, "$1.$2.$3-$4");
+        } else if (value.length > 6) {
+            value = value.replace(/^(\d{3})(\d{3})(\d{0,3}).*/, "$1.$2.$3");
+        } else if (value.length > 3) {
+            value = value.replace(/^(\d{3})(\d{0,3}).*/, "$1.$2");
+        }
+
+        e.target.value = value;
+    });
+
+    inputPhone.addEventListener('input', (e) => {
+        let value = e.target.value;
+        value = value.replace(/\D/g, "");
+        value = value.slice(0, 11);
+
+        if (value.length > 10) {
+            value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+        } else if (value.length > 6) {
+            value = value.replace(/^(\d{2})(\d{4,5})(\d{0,4}).*/, "($1) $2-$3");
+        } else if (value.length > 2) {
+            value = value.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+        } else if (value.length > 0) {
+            value = value.replace(/^(\d*)/, "($1");
+        }
+
+        e.target.value = value;
+    });
+</script>
+</body>
+</html>

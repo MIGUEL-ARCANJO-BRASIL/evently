@@ -162,6 +162,52 @@ form { text-align: left; }
     margin: 25px 0;
 }
 
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    background-color: white;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+}
+
+.btn-google:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.divider-text {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.divider-text::before,
+.divider-text::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.divider-text span {
+    padding: 0 10px;
+}
+
+
 .footer-text {
     font-size: 14px;
     color: var(--text-muted);

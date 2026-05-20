@@ -20,6 +20,8 @@ public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final CustomAuthenticationSuccessHandler successHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -41,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/{id}/edit", "/{id}/archive").hasAnyRole("ADMIN", "ORGANIZADOR")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/organizador/**").hasAnyRole("ADMIN", "ORGANIZADOR")
+                        .requestMatchers("/auth/complete-profile").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -49,6 +52,13 @@ public class SecurityConfig {
                         .successHandler(successHandler)
                         .failureUrl("/auth/login?erro=true")
                         .permitAll()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/auth/login")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(successHandler)
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
@@ -70,17 +80,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         // Passamos o userDetailsService diretamente no construtor para satisfazer o erro
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
 
         // O PasswordEncoder continua sendo via setter
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPasswordEncoder(passwordEncoder);
 
         return authProvider;
     }
