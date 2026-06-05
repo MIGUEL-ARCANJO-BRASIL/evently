@@ -417,6 +417,7 @@
         .edit-grid {
             grid-template-columns: 1fr;
         }
+    }
 
 /* Modal Styles */
 .modal {
@@ -482,4 +483,3 @@
     gap: 12px;
     margin-top: 32px;
 }
-    }
